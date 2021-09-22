@@ -26,6 +26,10 @@ export class User {
   @Prop()
   age: number;
 
+  @Prop()
+  @Exclude({ toPlainOnly: true })
+  currentHashedRefreshToken?: string;
+
   //  toJSON() {
   //    return classToPlain(this);
   //  }

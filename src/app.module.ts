@@ -9,7 +9,8 @@ import {
   AuthenticationService,
 } from './api/authentication';
 import { LocalStrategy } from './api/authentication/authentication.strategy';
-import { JwtStrategy } from './api/authentication/jwt.strategy';
+import { JwtRefreshTokenStrategy } from './api/authentication/jwt-refresh-token.strategy';
+import { JwtStrategy, } from './api/authentication/jwt.strategy';
 import { UsersModule } from './api/users/users.module';
 const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
 
@@ -19,8 +20,10 @@ const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
     PassportModule,
     ConfigModule.forRoot({
       validationSchema: Joi.object({
-        JWT_SECRET: Joi.string().required(),
-        JWT_EXPIRATION_TIME: Joi.string().required(),
+        JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
+        JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
+        JWT_REFRESH_TOKEN_SECRET: Joi.string().required(),
+        JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
       }),
     }),
     ConfigModule,
@@ -28,15 +31,16 @@ const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET'),
+        secret: configService.get('JWT_ACCESS_TOKEN_SECRET'),
         signOptions: {
-          expiresIn: `${configService.get('JWT_EXPIRATION_TIME')}`,
+          expiresIn: `${configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`,
         },
+        
       }),
     }),
     UsersModule,
   ],
-  providers: [AuthenticationService, LocalStrategy, JwtStrategy],
+  providers: [AuthenticationService, LocalStrategy, JwtStrategy, JwtRefreshTokenStrategy],
   controllers: [AuthenticationController],
 })
 export class AppModule {}
