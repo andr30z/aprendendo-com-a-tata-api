@@ -4,6 +4,7 @@ import {
   Document,
   FilterQuery,
   Model,
+  QueryOptions,
   UpdateQuery,
 } from 'mongoose';
 
@@ -33,6 +34,22 @@ export abstract class EntityRepository<T extends Document> {
   }
 
   /**
+   * Update one entity, this won't return the entity document
+   * @author andr3z0
+   **/
+  async updateOne(
+    entityFilterQuery: FilterQuery<T>,
+    updateEntityData: UpdateQuery<unknown>,
+    queryOptions?: QueryOptions,
+  ) {
+    return this.entityModel.updateOne(
+      entityFilterQuery,
+      updateEntityData,
+      queryOptions,
+    );
+  }
+
+  /**
    * Create a document in one ```T``` collection
    * @author andr3z0
    **/
@@ -48,29 +65,29 @@ export abstract class EntityRepository<T extends Document> {
   async findOneAndUpdate(
     entityFilterQuery: FilterQuery<T>,
     updateEntityData: UpdateQuery<unknown>,
+    queryOptions?: QueryOptions,
   ) {
     return this.entityModel.findOneAndUpdate(
       entityFilterQuery,
       updateEntityData,
-      { new: true },
+      { new: true, ...queryOptions },
     );
   }
 
   /**
-  * Delete many entities method
-  * @author andr3z0
-  **/
+   * Delete many entities method
+   * @author andr3z0
+   **/
   async deleteMany(entityFilterQuery: FilterQuery<T>) {
     const deleteResult = await this.entityModel.deleteMany(entityFilterQuery);
     return deleteResult.deletedCount >= 1;
   }
 
-
   /**
-  * Delete one method
-  * @author andr3z0
-  **/
-  async deleteOne(entityFilterQuery:FilterQuery<T>){
-      return this.entityModel.deleteOne(entityFilterQuery);
+   * Delete one method
+   * @author andr3z0
+   **/
+  async deleteOne(entityFilterQuery: FilterQuery<T>) {
+    return this.entityModel.deleteOne(entityFilterQuery);
   }
 }

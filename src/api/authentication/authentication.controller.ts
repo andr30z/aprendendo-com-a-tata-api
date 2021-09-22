@@ -1,17 +1,19 @@
 import {
   Body,
-  Controller,
-  Post,
+  Controller, Post,
+  Put,
   Req,
   Res,
   UseGuards,
-  UseInterceptors,
+  UseInterceptors
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { MongoSerializerInterceptor } from 'src/interceptors';
 import { CreateUserDto, User } from '../users';
 import { AuthenticationService } from './authentication.service';
+import JwtAuthenticationGuard from './jwt-authentication.guard';
+import JwtRefreshGuard from './jwt-refresh.guard';
 import { LocalAuthenticationGuard } from './local-authentication.guard';
 import { LoginCredentialsWithRequest } from './types';
 @ApiTags('Authentication')
@@ -27,10 +29,28 @@ export class AuthenticationController {
 
   @UseGuards(LocalAuthenticationGuard)
   @Post('login')
-  async logIn(
+  logIn(
     @Req() request: LoginCredentialsWithRequest,
     @Res() response: Response,
   ) {
     return this.authenticationService.login(request, response);
+  }
+
+  @UseGuards(JwtRefreshGuard)
+  @Put('refresh')
+  refreshToken(
+    @Req() request: LoginCredentialsWithRequest,
+    @Res() response: Response,
+  ) {
+    return this.authenticationService.refresh(request, response);
+  }
+
+  @UseGuards(JwtAuthenticationGuard)
+  @Post('logout')
+  logOut(
+    @Req() request: LoginCredentialsWithRequest,
+    @Res() response: Response,
+  ) {
+    return this.authenticationService.logout(request, response);
   }
 }
