@@ -12,6 +12,7 @@ import { LocalStrategy } from './api/authentication/authentication.strategy';
 import { JwtRefreshTokenStrategy } from './api/authentication/jwt-refresh-token.strategy';
 import { JwtStrategy, } from './api/authentication/jwt.strategy';
 import { UsersModule } from './api/users/users.module';
+import { ActivitiesModule } from './api/activities/activities.module';
 const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
 
 @Module({
@@ -39,6 +40,7 @@ const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
       }),
     }),
     UsersModule,
+    ActivitiesModule,
   ],
   providers: [AuthenticationService, LocalStrategy, JwtStrategy, JwtRefreshTokenStrategy],
   controllers: [AuthenticationController],
