@@ -48,6 +48,7 @@ export class AuthenticationService {
   }
 
   login(credentials: LoginCredentialsWithRequest, response: Response) {
+    console.log(credentials.user)
     const accessTokenCookie = this.getCookieWithJwtToken(
       credentials.user._id.toString(),
     );
@@ -100,6 +101,7 @@ export class AuthenticationService {
   }
 
   refresh(request: LoginCredentialsWithRequest, response: Response) {
+    console.log(request.user)
     const accessTokenCookie = this.getCookieWithJwtToken(
       request.user._id.toString(),
     );

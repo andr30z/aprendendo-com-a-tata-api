@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Exclude, Transform } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { Document, ObjectId, Schema as MongooseSchema } from 'mongoose';
 import { ActivityDificultyTypes, ActivityTypes } from '../types';
 

@@ -18,7 +18,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './user.entity';
 import { UsersService } from './users.service';
 
-@UseInterceptors(new NotFoundInterceptor())
+@UseInterceptors(new NotFoundInterceptor("Registro não encontrado!"))
 @UseInterceptors(MongoSerializerInterceptor(User))
 @UseGuards(JwtAuthenticationGuard)
 @ApiCookieAuth()

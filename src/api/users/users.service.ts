@@ -38,7 +38,7 @@ export class UsersService {
   async getUserIfRefreshTokenMatches(refreshToken: string, userId: string) {
     const user = await this.getById(userId);
     const doc = user.toObject();
-    console.log('after', user, userId, doc.currentHashedRefreshToken);
+    // console.log('after', user, userId, doc.currentHashedRefreshToken);
     const isRefreshTokenMatching = await bcrypt.compare(
       refreshToken,
       doc.currentHashedRefreshToken,

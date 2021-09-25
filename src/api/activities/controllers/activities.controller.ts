@@ -1,14 +1,14 @@
 import {
+  CacheInterceptor,
+  CACHE_MANAGER,
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
+  Inject,
   Param,
-  Delete,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { Cache } from 'cache-manager';
 import { NotFoundInterceptor } from 'src/interceptors';
 import { ActivitiesService } from '../services';
 
@@ -17,8 +17,12 @@ import { ActivitiesService } from '../services';
 @ApiTags('Activities')
 @Controller('v1/activities')
 export class ActivitiesController {
-  constructor(private readonly activitiesService: ActivitiesService) {}
+  constructor(
+    // @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private readonly activitiesService: ActivitiesService,
+  ) {}
 
+  @UseInterceptors(CacheInterceptor)
   @Get()
   findAll() {
     return this.activitiesService.findAll();
