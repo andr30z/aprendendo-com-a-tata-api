@@ -4,8 +4,9 @@ import { ActivitiesRepository } from '../repositories';
 @Injectable()
 export class ActivitiesService {
   constructor(private readonly activitiesRepository: ActivitiesRepository) {}
-  findAll() {
-    return this.activitiesRepository.find();
+  async findAll() {
+    const activities = await this.activitiesRepository.find();
+    return { activities };
   }
 
   findOne(id: string) {

@@ -27,6 +27,9 @@ export class Activity {
 
   @Prop({ required: true, type: MongooseSchema.Types.Mixed })
   stages: any;
+
+  @Prop({ required: true })
+  tags: Array<String>;
 }
 
 export const ActivitySchema = SchemaFactory.createForClass(Activity);
