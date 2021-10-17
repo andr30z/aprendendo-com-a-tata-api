@@ -48,7 +48,7 @@ export class AuthenticationService {
   }
 
   login(credentials: LoginCredentialsWithRequest, response: Response) {
-    console.log(credentials.user)
+    console.log(credentials.user, 'credenciais');
     const accessTokenCookie = this.getCookieWithJwtToken(
       credentials.user._id.toString(),
     );
@@ -101,15 +101,20 @@ export class AuthenticationService {
   }
 
   refresh(request: LoginCredentialsWithRequest, response: Response) {
-    console.log(request.user)
+    console.log(request.user);
     const accessTokenCookie = this.getCookieWithJwtToken(
       request.user._id.toString(),
     );
-
+    const refreshTokenCookie = this.getCookieWithJwtRefreshToken(
+      request.user._id.toString(),
+    );
     const user = request.user;
     user.currentHashedRefreshToken = undefined;
     user.password = undefined;
-    response.setHeader('Set-Cookie', accessTokenCookie);
+    response.setHeader('Set-Cookie', [
+      accessTokenCookie,
+      refreshTokenCookie.cookie,
+    ]);
     response.status(200).json(user);
   }
 

@@ -5,16 +5,19 @@ import {
   Get,
   Inject,
   Param,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
+import JwtAuthenticationGuard from 'src/api/authentication/jwt-authentication.guard';
 import { NotFoundInterceptor } from 'src/interceptors';
 import { ActivitiesService } from '../services';
 
 @UseInterceptors(new NotFoundInterceptor())
 @ApiCookieAuth()
 @ApiTags('Activities')
+@UseGuards(JwtAuthenticationGuard)
 @Controller('v1/activities')
 export class ActivitiesController {
   constructor(

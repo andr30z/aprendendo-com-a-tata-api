@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -13,16 +14,17 @@ import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { MongoSerializerInterceptor } from 'src/interceptors';
 import { NotFoundInterceptor } from 'src/interceptors/not-found.interceptor';
 import JwtAuthenticationGuard from '../authentication/jwt-authentication.guard';
+import { LoginCredentialsWithRequest } from '../authentication/types';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './user.entity';
 import { UsersService } from './users.service';
 
-@UseInterceptors(new NotFoundInterceptor("Registro não encontrado!"))
+@UseInterceptors(new NotFoundInterceptor('Registro não encontrado!'))
 @UseInterceptors(MongoSerializerInterceptor(User))
 @UseGuards(JwtAuthenticationGuard)
 @ApiCookieAuth()
-@ApiTags("User")
+@ApiTags('User')
 @Controller('v1/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -35,6 +37,11 @@ export class UsersController {
   @Get()
   findAll() {
     return this.usersService.findAll();
+  }
+
+  @Get('me')
+  me(@Req() request: LoginCredentialsWithRequest) {
+    return this.usersService.me(request);
   }
 
   @Get(':id')

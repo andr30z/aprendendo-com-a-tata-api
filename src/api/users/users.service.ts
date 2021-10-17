@@ -8,6 +8,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from './users.repository';
 import * as bcrypt from 'bcrypt';
+import { LoginCredentialsWithRequest } from '../authentication/types';
 
 @Injectable()
 export class UsersService {
@@ -50,6 +51,7 @@ export class UsersService {
   }
 
   getById(id: string) {
+    console.log('id', id)
     if (!isValidObjectId(id))
       throw new BadRequestException(
         'Id informado não atende aos requisitos do MongoDB',
@@ -72,5 +74,9 @@ export class UsersService {
         currentHashedRefreshToken: null,
       },
     );
+  }
+
+  me(req: LoginCredentialsWithRequest) {
+    return req.user;
   }
 }

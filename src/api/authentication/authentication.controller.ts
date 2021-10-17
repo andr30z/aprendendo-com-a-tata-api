@@ -1,13 +1,14 @@
 import {
   Body,
-  Controller, Post,
+  Controller,
+  Post,
   Put,
   Req,
   Res,
   UseGuards,
   UseInterceptors
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { MongoSerializerInterceptor } from 'src/interceptors';
 import { CreateUserDto, User } from '../users';
@@ -28,6 +29,14 @@ export class AuthenticationController {
   }
 
   @UseGuards(LocalAuthenticationGuard)
+  @ApiBody({
+    schema: {
+      example: {
+        email: 'email',
+        password: 'password',
+      },
+    },
+  })
   @Post('login')
   logIn(
     @Req() request: LoginCredentialsWithRequest,
@@ -36,6 +45,14 @@ export class AuthenticationController {
     return this.authenticationService.login(request, response);
   }
 
+  @ApiResponse({
+    schema: {
+      example: {
+        email: 'email',
+        password: 'password',
+      },
+    },
+  })
   @UseGuards(JwtRefreshGuard)
   @Put('refresh')
   refreshToken(
