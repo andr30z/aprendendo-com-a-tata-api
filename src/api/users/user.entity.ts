@@ -30,6 +30,9 @@ export class User {
   @Exclude({ toPlainOnly: true })
   currentHashedRefreshToken?: string;
 
+  @Prop()
+  profilePhoto?: string;
+
   //  toJSON() {
   //    return classToPlain(this);
   //  }

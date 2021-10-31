@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import { isValidObjectId } from 'mongoose';
@@ -12,7 +13,9 @@ import { LoginCredentialsWithRequest } from '../authentication/types';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(
+    private readonly usersRepository: UsersRepository,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const user = await this.usersRepository.findUserByEmail(
@@ -51,7 +54,6 @@ export class UsersService {
   }
 
   getById(id: string) {
-    console.log('id', id)
     if (!isValidObjectId(id))
       throw new BadRequestException(
         'Id informado não atende aos requisitos do MongoDB',

@@ -14,6 +14,18 @@ import {
  **/
 export abstract class EntityRepository<T extends Document> {
   constructor(protected readonly entityModel: Model<T>) {}
+
+  /**
+   * Same as findOne, but without the exec() at the end.
+   * @author andr3z0
+   **/
+  findOneWithPromise(
+    entityFilterQuery: FilterQuery<T>,
+    projection?: Record<string, unknown>,
+  ) {
+    return this.entityModel.findOne(entityFilterQuery, projection);
+  }
+
   /**
    * Find one operation
    * @author andr3z0
@@ -21,8 +33,11 @@ export abstract class EntityRepository<T extends Document> {
   async findOne(
     entityFilterQuery: FilterQuery<T>,
     projection?: Record<string, unknown>,
+    populatePath?: string,
   ) {
-    return this.entityModel.findOne(entityFilterQuery, projection).exec();
+    const query = this.entityModel.findOne(entityFilterQuery, projection);
+    if (populatePath) return query.populate(populatePath).exec();
+    return query.exec();
   }
 
   /**
