@@ -5,8 +5,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { isValidObjectId } from 'mongoose';
+import { Document, EnforceDocument, isValidObjectId, Query } from 'mongoose';
 import { nanoid } from 'nanoid';
+import { ClassroomDocument, Classroom } from 'src/api/classroom/entities';
 import { UsersService, UserType } from 'src/api/users';
 import { CreateClassroomDto } from '../dto/create-classroom.dto';
 import { UpdateClassroomDto } from '../dto/update-activity.dto';
@@ -34,19 +35,36 @@ export class ClassroomService {
         'Não foi possível encontrar uma classe com o ID informado!',
       );
 
-    await document.populate('teacher');
-    await document.populate('members');
-    return document;
+    return this.populateClassroomPromise(document);
+  }
+
+  populateClassroom(
+    query: Query<
+      EnforceDocument<ClassroomDocument, {}>,
+      EnforceDocument<ClassroomDocument, {}>,
+      {},
+      ClassroomDocument
+    >,
+  ) {
+    return query.populate('teacher').populate('members').exec();
+  }
+  async populateClassroomPromise(
+    query: Classroom &
+      Document<any, any, any> & {
+        _id: any;
+      },
+  ) {
+    await query.populate('teacher');
+    await query.populate('members');
+    return query;
   }
 
   findOne(id: string) {
     if (!isValidObjectId(id))
       throw new BadRequestException('ID informado é inválido!');
-    return this.classroomRepository
-      .findOneWithPromise({ _id: id })
-      .populate('teacher')
-      .populate('members')
-      .exec();
+    return this.populateClassroom(
+      this.classroomRepository.findOneWithPromise({ _id: id }),
+    );
   }
 
   async create(createClassroomDto: CreateClassroomDto) {
@@ -69,7 +87,8 @@ export class ClassroomService {
           createClassroomDto.name,
       );
     if (!teacher) throw new NotFoundException('Professor não encontrado.');
-    return this.classroomRepository.create({
+
+    return await this.classroomRepository.create({
       ...createClassroomDto,
       teacher,
       members: [],
@@ -78,11 +97,14 @@ export class ClassroomService {
   }
 
   async deleteOne(id: string) {
-    const deleted = await this.classroomRepository.deleteOne({ _id: id });
-    if (deleted.deletedCount === 0)
+    const deleted = await this.classroomRepository.deleteAndReturnDocument({
+      _id: id,
+    });
+
+    if (!deleted)
       throw new NotFoundException(
         'Não foi possivel encontrar uma classe com o ID informado!',
       );
-    return { success: true };
+    return this.populateClassroomPromise(deleted);
   }
 }

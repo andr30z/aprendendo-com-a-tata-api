@@ -7,7 +7,7 @@ export type ActivityDocument = Activity & Document;
 
 @Schema({ timestamps: true })
 export class Activity {
-  @Transform(({ value }) => value.toString())
+  @Transform(({obj}) => obj._id.toString())
   _id: ObjectId;
 
   @Prop({ required: true })

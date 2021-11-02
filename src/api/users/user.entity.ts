@@ -5,12 +5,12 @@ import { UserType } from './types/user.type';
 
 export type UserDocument = User & Document;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true})
 export class User {
   @Prop({ required: true })
   name: string;
 
-  @Transform(({ value }) => value.toString())
+  @Transform(({obj}) => obj._id.toString())
   _id: ObjectId;
 
   @Prop({ required: true })

@@ -41,8 +41,8 @@ export class ClassroomController {
   }
 
   @Post()
-  create(@Body() createUserDto: CreateClassroomDto) {
-    return this.classroomService.create(createUserDto);
+  async create(@Body() createUserDto: CreateClassroomDto) {
+    return await this.classroomService.create(createUserDto);
   }
 
   @Delete(':id')

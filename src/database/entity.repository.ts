@@ -70,7 +70,9 @@ export abstract class EntityRepository<T extends Document> {
    **/
   async create(createEntityData: AnyKeys<T>) {
     const entity = new this.entityModel(createEntityData);
-    return entity.save();
+    const savedData = entity.save();
+
+    return savedData;
   }
 
   /**
@@ -104,5 +106,13 @@ export abstract class EntityRepository<T extends Document> {
    **/
   async deleteOne(entityFilterQuery: FilterQuery<T>) {
     return this.entityModel.deleteOne(entityFilterQuery);
+  }
+
+  /**
+   * Same as ```deleteOne```, but return the deleted document.
+   * @author andr3z0
+   **/
+  async deleteAndReturnDocument(entityFilterQuery: FilterQuery<T>) {
+    return this.entityModel.findOneAndDelete(entityFilterQuery);
   }
 }
