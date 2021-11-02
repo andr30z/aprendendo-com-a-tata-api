@@ -13,7 +13,7 @@ export class ClassroomRepository extends EntityRepository<ClassroomDocument> {
     super(classroomModel);
   }
 
-  findClassByNameAndUser(name: string, teacherId: mongoose.Schema.Types.ObjectId) {
+  findClassByNameAndUser(name: string, teacherId: mongoose.Types.ObjectId) {
     return this.classroomModel.findOne({
       teacher: teacherId,
       name,

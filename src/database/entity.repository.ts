@@ -44,7 +44,7 @@ export abstract class EntityRepository<T extends Document> {
    * Find
    * @author andr3z0
    **/
-  async find(entityFilterQuery?: FilterQuery<T>) {
+  find(entityFilterQuery?: FilterQuery<T>) {
     return this.entityModel.find(entityFilterQuery);
   }
 

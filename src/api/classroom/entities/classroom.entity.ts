@@ -8,7 +8,10 @@ export type ClassroomDocument = Classroom & Document;
 
 @Schema({ timestamps: true })
 export class Classroom {
-  @Transform(({obj}) => obj._id.toString())
+  @Transform(({ obj, value }) => {
+    console.log(obj+ value+ "ssssssss")
+    return obj._id.toString();
+  })
   _id: ObjectId;
 
   @Prop({ required: true })
@@ -20,13 +23,13 @@ export class Classroom {
     required: true,
   })
   @Type(() => User)
-  teacher: mongoose.Schema.Types.ObjectId;
+  teacher: mongoose.Types.ObjectId;
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   })
   @Type(() => User)
-  members: Array<mongoose.Schema.Types.ObjectId>;
+  members: Array<mongoose.Types.ObjectId>;
 
   @Prop({ required: true })
   classPhoto: string;

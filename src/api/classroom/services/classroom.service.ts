@@ -2,7 +2,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
-  NotFoundException
+  NotFoundException,
 } from '@nestjs/common';
 import { Document, EnforceDocument, Query } from 'mongoose';
 import { nanoid } from 'nanoid';
@@ -11,17 +11,23 @@ import { UsersService, UserType } from 'src/api/users';
 import { isValidMongoId } from 'src/Utils';
 import { CreateClassroomDto } from '../dto/create-classroom.dto';
 import { UpdateClassroomDto } from '../dto/update-classroom.dto';
-import { ClassroomRepository } from '../repositories';
-
+import { ClassroomRepository, PostRepository } from '../repositories';
 @Injectable()
 export class ClassroomService {
   constructor(
     private readonly classroomRepository: ClassroomRepository,
     private readonly userService: UsersService,
+    private readonly postRepository: PostRepository,
   ) {}
   async findAll() {
-    const classroom = await this.classroomRepository.find();
-    return { classroom };
+    return {
+      classrooms: await this.classroomRepository
+        .find()
+        .populate('teacher')
+        .populate('members')
+        .exec(),
+    };
+    // return { classrooms };
   }
 
   async update(id: string, updateUserDto: UpdateClassroomDto) {
@@ -105,5 +111,13 @@ export class ClassroomService {
         'Não foi possivel encontrar uma classe com o ID informado!',
       );
     return this.populateClassroomPromise(deleted);
+  }
+
+  async getPostsByClass(classId: string) {
+    isValidMongoId(classId);
+    return await this.postRepository.findByClass(classId);
+    // return {
+    //   posts,
+    // };
   }
 }
