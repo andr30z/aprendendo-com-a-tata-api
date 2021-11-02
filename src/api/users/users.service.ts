@@ -24,8 +24,8 @@ export class UsersService {
     return this.usersRepository.create(createUserDto);
   }
 
-  findAll() {
-    return this.usersRepository.find();
+  async findAll() {
+    return { users: await this.usersRepository.find() };
   }
   async setCurrentRefreshToken(refreshToken: string, userId: string) {
     const currentHashedRefreshToken = await bcrypt.hash(refreshToken, 10);

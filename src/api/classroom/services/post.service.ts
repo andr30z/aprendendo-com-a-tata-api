@@ -15,7 +15,12 @@ export class PostService {
     private readonly classroomService: ClassroomService,
   ) {}
   async findAll() {
-    return { posts: await this.postRepository.find() };
+    return {
+      posts: await this.postRepository
+        .find()
+        .populate([...this.populateFields])
+        .exec(),
+    };
   }
 
   readonly populateFields: Array<string | PopulateOptions> = [
@@ -44,10 +49,9 @@ export class PostService {
 
   async findOne(id: string) {
     isValidMongoId(id);
-    return populateRelations(
-      await this.postRepository.findOne({ _id: id }),
-      this.populateFields,
-    );
+    const post = await this.postRepository.findOne({ _id: id });
+    if (!post) throw new NotFoundException('Post não encontrado!');
+    return populateRelations(post, this.populateFields);
   }
 
   async create(createPostDto: CreatePostDto) {
