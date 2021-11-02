@@ -1,10 +1,10 @@
 import { CacheModule, Module } from '@nestjs/common';
-import { ClassroomService, PostService } from './services';
-import { ClassroomController, PostController } from './controllers';
-import { ClassroomRepository, PostRepository } from './repositories';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Classroom, ClassroomSchema, Post, PostSchema } from './entities';
 import { UsersModule } from '../users';
+import { ClassroomController, PostController } from './controllers';
+import { Classroom, ClassroomSchema, Post, PostSchema } from './entities';
+import { ClassroomRepository, PostRepository } from './repositories';
+import { ClassroomService, PostService } from './services';
 
 @Module({
   controllers: [ClassroomController, PostController],

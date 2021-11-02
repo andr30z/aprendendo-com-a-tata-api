@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PopulateOptions } from 'mongoose';
 import { UsersService } from 'src/api/users';
 import { populateRelations } from 'src/database/populate-relations.util';
@@ -11,6 +16,7 @@ import { ClassroomService } from '../services/classroom.service';
 export class PostService {
   constructor(
     private readonly postRepository: PostRepository,
+    @Inject(forwardRef(() => UsersService))
     private readonly userService: UsersService,
     private readonly classroomService: ClassroomService,
   ) {}

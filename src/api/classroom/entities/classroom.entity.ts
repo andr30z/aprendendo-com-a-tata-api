@@ -8,10 +8,7 @@ export type ClassroomDocument = Classroom & Document;
 
 @Schema({ timestamps: true })
 export class Classroom {
-  @Transform(({ obj, value }) => {
-    console.log(obj+ value+ "ssssssss")
-    return obj._id.toString();
-  })
+  @Transform(({ obj, value }) => obj._id.toString())
   _id: ObjectId;
 
   @Prop({ required: true })

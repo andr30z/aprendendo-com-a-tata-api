@@ -10,10 +10,7 @@ export type PostDocument = Post & Document;
 
 @Schema({ timestamps: true })
 export class Post {
-  @Transform(({ obj, value }) => {
-    console.log(obj + value + 'pppppp');
-    return obj._id.toString();
-  })
+  @Transform(({ obj, value }) => obj._id.toString())
   _id: ObjectId;
 
   @Prop({ required: true })
@@ -28,7 +25,7 @@ export class Post {
   author: mongoose.Types.ObjectId;
 
   @Prop({
-    type:  mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Classroom',
     required: true,
   })
@@ -40,7 +37,6 @@ export class Post {
 
   @Prop({ required: true })
   type: PostTypes;
-  
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);

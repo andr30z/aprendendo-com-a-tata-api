@@ -10,10 +10,7 @@ export class User {
   @Prop({ required: true })
   name: string;
 
-  @Transform(({ obj, value }) => {
-    console.log(obj+ value+ "asdasdasdasd")
-    return obj._id.toString();
-  })
+  @Transform(({ obj, value }) => obj._id.toString())
   _id: ObjectId;
 
   @Prop({ required: true })

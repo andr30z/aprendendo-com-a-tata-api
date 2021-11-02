@@ -4,10 +4,10 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Document, EnforceDocument, Query } from 'mongoose';
+import { Types } from 'mongoose';
 import { nanoid } from 'nanoid';
-import { Classroom, ClassroomDocument } from 'src/api/classroom/entities';
 import { UsersService, UserType } from 'src/api/users';
+import { populateRelations } from 'src/database/populate-relations.util';
 import { isValidMongoId } from 'src/Utils';
 import { CreateClassroomDto } from '../dto/create-classroom.dto';
 import { UpdateClassroomDto } from '../dto/update-classroom.dto';
@@ -19,6 +19,8 @@ export class ClassroomService {
     private readonly userService: UsersService,
     private readonly postRepository: PostRepository,
   ) {}
+
+  private readonly populateFields = ['teacher', 'members'];
   async findAll() {
     return {
       classrooms: await this.classroomRepository
@@ -41,35 +43,17 @@ export class ClassroomService {
         'Não foi possível encontrar uma classe com o ID informado!',
       );
 
-    return this.populateClassroomPromise(document);
+    return populateRelations(document, this.populateFields);
   }
 
-  populateClassroom(
-    query: Query<
-      EnforceDocument<ClassroomDocument, {}>,
-      EnforceDocument<ClassroomDocument, {}>,
-      {},
-      ClassroomDocument
-    >,
-  ) {
-    return query.populate('teacher').populate('members').exec();
-  }
-  async populateClassroomPromise(
-    query: Classroom &
-      Document<any, any, any> & {
-        _id: any;
-      },
-  ) {
-    await query.populate('teacher');
-    await query.populate('members');
-    return query;
-  }
-
-  findOne(id: string) {
+  async findOne(id: string) {
     isValidMongoId(id);
-    return this.populateClassroom(
-      this.classroomRepository.findOneWithPromise({ _id: id }),
-    );
+    const document = await this.classroomRepository.findOne({ _id: id });
+    if (!document)
+      throw new NotFoundException(
+        'Não foi possível encontrar uma classe com o ID informado.',
+      );
+    return populateRelations(document, this.populateFields);
   }
 
   async create(createClassroomDto: CreateClassroomDto) {
@@ -97,7 +81,7 @@ export class ClassroomService {
       ...createClassroomDto,
       teacher,
       members: [],
-      code: nanoid(11),
+      code: nanoid(11), // 11 length UUID
     });
   }
 
@@ -110,14 +94,28 @@ export class ClassroomService {
       throw new NotFoundException(
         'Não foi possivel encontrar uma classe com o ID informado!',
       );
-    return this.populateClassroomPromise(deleted);
+    return populateRelations(deleted, this.populateFields);
   }
 
   async getPostsByClass(classId: string) {
     isValidMongoId(classId);
-    const posts =  await this.postRepository.findByClass(classId);
-     return {
-       posts,
-     };
+    const posts = await this.postRepository.findByClass(classId);
+    return {
+      posts,
+    };
+  }
+
+  async classesByUsers(userId: string, isTeacher: boolean) {
+    isValidMongoId(userId);
+    const teacherOrMember = new Types.ObjectId(userId);
+    const query: { [x: string]: any } = {};
+    if (isTeacher) query['teacher'] = teacherOrMember;
+    else query['members'] = { $in: teacherOrMember };
+    return {
+      classrooms: await populateRelations(
+        this.classroomRepository.find(query),
+        this.populateFields,
+      ),
+    };
   }
 }

@@ -4,13 +4,17 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
+  ParseBoolPipe,
   Post,
   Put,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { IsOptional } from 'class-validator';
 import JwtAuthenticationGuard from 'src/api/authentication/jwt-authentication.guard';
 import { Classroom, Post as PostClass } from 'src/api/classroom/entities';
 import {
@@ -40,6 +44,18 @@ export class ClassroomController {
     return this.classroomService.getPostsByClass(classId);
   }
 
+  @UseInterceptors(MongoSerializerInterceptor(Classroom))
+  @Get('users/:id')
+  findClassesByUser(
+    @Param('id') userId: string,
+    @Query(
+      'isTeacher',
+      new ParseBoolPipe({ errorHttpStatusCode: HttpStatus.NOT_ACCEPTABLE }),
+    )
+    isTeacher: boolean,
+  ) {
+    return this.classroomService.classesByUsers(userId, isTeacher);
+  }
   @Put(':id')
   @UseInterceptors(MongoSerializerInterceptor(Classroom))
   update(@Param('id') id: string, @Body() createUserDto: CreateClassroomDto) {

@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { PostDocument, Post } from '../entities';
 import { EntityRepository } from 'src/database/entity.repository';
 import { Model, Types } from 'mongoose';
+import { populateRelations } from 'src/database/populate-relations.util';
 
 @Injectable()
 export class PostRepository extends EntityRepository<PostDocument> {
@@ -14,24 +15,27 @@ export class PostRepository extends EntityRepository<PostDocument> {
   }
 
   async findByClass(classId: string) {
-    return this.postModel
-      .find({ classroom: new Types.ObjectId(classId) })
-      .populate(['author'])
-      .populate({
-        path: 'classroom',
-        model: 'Classroom',
-        populate: [
-          {
-            path: 'teacher',
-            model: 'User',
-          },
-          {
-            path: 'members',
-            model: 'User',
-          },
-        ],
-      })
-      .exec();
+    return populateRelations(
+      this.postModel.find({ classroom: new Types.ObjectId(classId) }),
+      [
+        'author',
+        {
+          path: 'classroom',
+          model: 'Classroom',
+          populate: [
+            {
+              path: 'teacher',
+              model: 'User',
+            },
+            {
+              path: 'members',
+              model: 'User',
+            },
+          ],
+        },
+      ],
+    );
+
     // .then((x) => {
     //   console.log(x);
     //   return x;
