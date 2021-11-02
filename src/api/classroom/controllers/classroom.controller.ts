@@ -25,7 +25,7 @@ import { ClassroomService } from '../services';
 @ApiCookieAuth()
 @ApiTags('Classroom')
 @UseGuards(JwtAuthenticationGuard)
-@Controller('v1/classroom')
+@Controller('v1/classrooms')
 export class ClassroomController {
   constructor(private readonly classroomService: ClassroomService) {}
 

@@ -1,16 +1,16 @@
 import {
-  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
-import { Document, EnforceDocument, isValidObjectId, Query } from 'mongoose';
+import { Document, EnforceDocument, Query } from 'mongoose';
 import { nanoid } from 'nanoid';
-import { ClassroomDocument, Classroom } from 'src/api/classroom/entities';
+import { Classroom, ClassroomDocument } from 'src/api/classroom/entities';
 import { UsersService, UserType } from 'src/api/users';
+import { isValidMongoId } from 'src/Utils';
 import { CreateClassroomDto } from '../dto/create-classroom.dto';
-import { UpdateClassroomDto } from '../dto/update-activity.dto';
+import { UpdateClassroomDto } from '../dto/update-classroom.dto';
 import { ClassroomRepository } from '../repositories';
 
 @Injectable()
@@ -60,8 +60,7 @@ export class ClassroomService {
   }
 
   findOne(id: string) {
-    if (!isValidObjectId(id))
-      throw new BadRequestException('ID informado é inválido!');
+    isValidMongoId(id);
     return this.populateClassroom(
       this.classroomRepository.findOneWithPromise({ _id: id }),
     );

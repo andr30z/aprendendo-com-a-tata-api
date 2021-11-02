@@ -10,12 +10,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from './users.repository';
 import * as bcrypt from 'bcrypt';
 import { LoginCredentialsWithRequest } from '../authentication/types';
+import { isValidMongoId } from 'src/Utils';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private readonly usersRepository: UsersRepository,
-  ) {}
+  constructor(private readonly usersRepository: UsersRepository) {}
 
   async create(createUserDto: CreateUserDto) {
     const user = await this.usersRepository.findUserByEmail(
@@ -54,10 +53,7 @@ export class UsersService {
   }
 
   getById(id: string) {
-    if (!isValidObjectId(id))
-      throw new BadRequestException(
-        'Id informado não atende aos requisitos do MongoDB',
-      );
+    isValidMongoId(id, 'Id informado não atende aos requisitos do MongoDB');
     return this.usersRepository.findOne({ _id: id });
   }
 
