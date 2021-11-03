@@ -1,6 +1,6 @@
+import { HttpException } from '@nestjs/common';
 import {
   AnyKeys,
-  AnyObject,
   Document,
   FilterQuery,
   Model,
@@ -24,6 +24,19 @@ export abstract class EntityRepository<T extends Document> {
     projection?: Record<string, unknown>,
   ) {
     return this.entityModel.findOne(entityFilterQuery, projection);
+  }
+
+  /**
+   * Same as find one, but if no ```T``` entity is finded then throw a callback error.
+   * @author andr3z0
+   **/
+  async findOneOrThrow(
+    entityFilterQuery: FilterQuery<T>,
+    throwCallback: () => HttpException,
+  ) {
+    const entity = await this.findOne(entityFilterQuery);
+    if (!entity) throw throwCallback();
+    return entity;
   }
 
   /**

@@ -1,9 +1,4 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PopulateOptions } from 'mongoose';
 import { UsersService } from 'src/api/users';
 import { populateRelations } from 'src/database/populate-relations.util';
@@ -11,12 +6,12 @@ import { isValidMongoId } from 'src/Utils';
 import { CreatePostDto, UpdatePostDto } from '../dto';
 import { PostRepository } from '../repositories';
 import { ClassroomService } from '../services/classroom.service';
+import { POPULATE_PATHS } from '../utils';
 
 @Injectable()
 export class PostService {
   constructor(
     private readonly postRepository: PostRepository,
-    @Inject(forwardRef(() => UsersService))
     private readonly userService: UsersService,
     private readonly classroomService: ClassroomService,
   ) {}
@@ -24,17 +19,10 @@ export class PostService {
     return {
       posts: await this.postRepository
         .find()
-        .populate([...this.populateFields])
+        .populate(POPULATE_PATHS.POST)
         .exec(),
     };
   }
-
-  readonly populateFields: Array<string | PopulateOptions> = [
-    'author',
-    'classroom',
-    'classroom.teacher',
-    'classroom.members',
-  ];
 
   async update(id: string, updateUserDto: UpdatePostDto) {
     isValidMongoId(id);
@@ -50,14 +38,14 @@ export class PostService {
         'Não foi possível encontrar um post com o ID informado!',
       );
 
-    return populateRelations(document, this.populateFields);
+    return populateRelations(document, POPULATE_PATHS.POST);
   }
 
   async findOne(id: string) {
     isValidMongoId(id);
     const post = await this.postRepository.findOne({ _id: id });
     if (!post) throw new NotFoundException('Post não encontrado!');
-    return populateRelations(post, this.populateFields);
+    return populateRelations(post, POPULATE_PATHS.POST);
   }
 
   async create(createPostDto: CreatePostDto) {
@@ -83,7 +71,7 @@ export class PostService {
             ? true
             : createPostDto.allowComments,
       }),
-      this.populateFields,
+      POPULATE_PATHS.POST,
     );
   }
 
@@ -97,6 +85,6 @@ export class PostService {
       throw new NotFoundException(
         'Não foi possivel encontrar um post com o ID informado!',
       );
-    return populateRelations(deleted, this.populateFields);
+    return populateRelations(deleted, POPULATE_PATHS.POST);
   }
 }

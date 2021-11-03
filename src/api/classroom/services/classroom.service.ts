@@ -2,16 +2,18 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
-import { Types } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { nanoid } from 'nanoid';
 import { UsersService, UserType } from 'src/api/users';
 import { populateRelations } from 'src/database/populate-relations.util';
 import { isValidMongoId } from 'src/Utils';
+import { User } from '../../users';
 import { CreateClassroomDto } from '../dto/create-classroom.dto';
 import { UpdateClassroomDto } from '../dto/update-classroom.dto';
 import { ClassroomRepository, PostRepository } from '../repositories';
+import { POPULATE_PATHS } from '../utils';
 @Injectable()
 export class ClassroomService {
   constructor(
@@ -20,7 +22,6 @@ export class ClassroomService {
     private readonly postRepository: PostRepository,
   ) {}
 
-  private readonly populateFields = ['teacher', 'members'];
   async findAll() {
     return {
       classrooms: await this.classroomRepository
@@ -32,18 +33,34 @@ export class ClassroomService {
     // return { classrooms };
   }
 
-  async update(id: string, updateUserDto: UpdateClassroomDto) {
-    delete updateUserDto.teacherId;
+  teacherVerification(
+    user?: User &
+      Document<any, any, any> & {
+        _id: any;
+      },
+    isEdit?: boolean,
+  ) {
+    if (user?.type !== UserType.T)
+      throw new ForbiddenException(
+        `Apenas usuários do tipo Professor podem ${
+          isEdit ? 'editar' : 'cadastrar'
+        } salas.`,
+      );
+  }
+  async update(id: string, updateClassroomDto: UpdateClassroomDto) {
+    const user = await this.userService.getById(updateClassroomDto.teacherId);
+    this.teacherVerification(user);
+    delete updateClassroomDto.teacherId;
     const document = await this.classroomRepository.findOneAndUpdate(
       { _id: id },
-      updateUserDto,
+      updateClassroomDto,
     );
     if (!document)
       throw new NotFoundException(
         'Não foi possível encontrar uma classe com o ID informado!',
       );
 
-    return populateRelations(document, this.populateFields);
+    return populateRelations(document, POPULATE_PATHS.CLASSROOM);
   }
 
   async findOne(id: string) {
@@ -53,17 +70,15 @@ export class ClassroomService {
       throw new NotFoundException(
         'Não foi possível encontrar uma classe com o ID informado.',
       );
-    return populateRelations(document, this.populateFields);
+    return populateRelations(document, POPULATE_PATHS.CLASSROOM);
   }
 
   async create(createClassroomDto: CreateClassroomDto) {
     const teacher = await this.userService.getById(
       createClassroomDto.teacherId,
     );
-    if (teacher.type !== UserType.T)
-      throw new ForbiddenException(
-        'Apenas usuários do tipo Professor podem cadastrar salas.',
-      );
+
+    this.teacherVerification(teacher);
 
     if (
       await this.classroomRepository.findClassByNameAndUser(
@@ -94,7 +109,7 @@ export class ClassroomService {
       throw new NotFoundException(
         'Não foi possivel encontrar uma classe com o ID informado!',
       );
-    return populateRelations(deleted, this.populateFields);
+    return populateRelations(deleted, POPULATE_PATHS.CLASSROOM);
   }
 
   async getPostsByClass(classId: string) {
@@ -114,7 +129,7 @@ export class ClassroomService {
     return {
       classrooms: await populateRelations(
         this.classroomRepository.find(query),
-        this.populateFields,
+        POPULATE_PATHS.CLASSROOM,
       ),
     };
   }
