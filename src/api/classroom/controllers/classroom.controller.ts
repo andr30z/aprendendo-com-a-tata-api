@@ -79,4 +79,12 @@ export class ClassroomController {
   findOne(@Param('id') id: string) {
     return this.classroomService.findOne(id);
   }
+
+  @Post(':classId/:userId')
+  async joinClassroomRequest(
+    @Param('classId') classId: string,
+    @Param('userId') userId: string,
+  ) {
+    return await this.classroomService.classroomInviteRequest(classId, userId);
+  }
 }

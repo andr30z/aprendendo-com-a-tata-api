@@ -2,7 +2,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
-  NotFoundException
+  NotFoundException,
 } from '@nestjs/common';
 import { Document, Types } from 'mongoose';
 import { nanoid } from 'nanoid';
@@ -96,6 +96,7 @@ export class ClassroomService {
       ...createClassroomDto,
       teacher,
       members: [],
+      pendingJoinRequests: [],
       code: nanoid(11), // 11 length UUID
     });
   }
@@ -132,5 +133,23 @@ export class ClassroomService {
         POPULATE_PATHS.CLASSROOM,
       ),
     };
+  }
+
+  async classroomInviteRequest(classroomId: string, userId: string) {
+    isValidMongoId(classroomId);
+    const user = await this.userService.getById(userId);
+
+    const classroom = await this.classroomRepository.findOneOrThrow(
+      { _id: classroomId },
+      () => new NotFoundException('Classe não encontrada.'),
+    );
+
+    if (classroom.members.find((member) => member._id.toString() === userId))
+      throw new ConflictException('O usuário já é membro da classe.');
+
+    classroom.pendingJoinRequests.push(user._id);
+    await classroom.save();
+
+    return { success: 'Pedido registrado com sucesso' };
   }
 }

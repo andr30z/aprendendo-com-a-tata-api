@@ -1,5 +1,5 @@
-export const getPopulateCommentsOrPosts = (isComments?: boolean) => ({
-  path: isComments ? 'post.classroom' : 'classroom',
+export const getPopulateCommentsOrPosts = () => ({
+  path: 'classroom',
   model: 'Classroom',
   populate: [
     {
@@ -16,5 +16,18 @@ export const getPopulateCommentsOrPosts = (isComments?: boolean) => ({
 export const POPULATE_PATHS = {
   CLASSROOM: ['teacher', 'members'],
   POST: ['author', 'classroom', getPopulateCommentsOrPosts()],
-  COMMENT: ['author', 'post', getPopulateCommentsOrPosts(true)],
+  COMMENT: [
+    'author',
+    {
+      path: 'post',
+      model: 'Post',
+      populate: [
+        getPopulateCommentsOrPosts(),
+        {
+          path: 'author',
+          model: 'User',
+        },
+      ],
+    },
+  ],
 };

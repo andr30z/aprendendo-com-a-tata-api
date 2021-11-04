@@ -3,6 +3,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { isValidObjectId } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -54,7 +55,10 @@ export class UsersService {
 
   getById(id: string) {
     isValidMongoId(id, 'Id informado não atende aos requisitos do MongoDB');
-    return this.usersRepository.findOne({ _id: id });
+    return this.usersRepository.findOneOrThrow(
+      { _id: id },
+      () => new NotFoundException('Usuário não encontrado'),
+    );
   }
 
   update(id: string, updateUserDto: UpdateUserDto) {
