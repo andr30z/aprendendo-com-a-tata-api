@@ -28,7 +28,6 @@ export class Classroom {
   @Type(() => User)
   members: Array<mongoose.Types.ObjectId>;
 
-  
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   })
@@ -43,6 +42,10 @@ export class Classroom {
 
   @Prop({ required: true })
   color: string;
+
+  @Prop({ required: true })
+  textColor: string;
+
   @Prop({ required: true })
   code: string;
   @Prop({ required: true })

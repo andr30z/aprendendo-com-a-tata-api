@@ -16,7 +16,11 @@ export class CreateClassroomDto {
   @ApiProperty()
   description: string;
   @ApiProperty()
+  @IsNotEmpty({ message: 'A cor da classe é obrigatória!' })
   color: string;
+  @ApiProperty()
+  @IsNotEmpty({ message: 'A cor de texto da classe é obrigatória!' })
+  textColor: string;
   @ApiProperty()
   tags: Array<string>;
 }
