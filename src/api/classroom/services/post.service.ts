@@ -1,12 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PopulateOptions } from 'mongoose';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UsersService } from 'src/api/users';
 import { populateRelations } from 'src/database/populate-relations.util';
-import { isValidMongoId } from 'src/Utils';
+import { isFromClass, isValidMongoId } from 'src/Utils';
 import { CreatePostDto, UpdatePostDto } from '../dto';
 import { PostRepository } from '../repositories';
 import { ClassroomService } from '../services/classroom.service';
-import { POPULATE_PATHS } from '../utils';
+import { isUserInClassroom, POPULATE_PATHS } from '../utils';
+import { Classroom } from '../entities';
 
 @Injectable()
 export class PostService {
@@ -60,6 +64,14 @@ export class PostService {
     if (!classroom)
       throw new NotFoundException(
         `Classe de ID: ${createPostDto.classroomId} não existe`,
+      );
+
+    if (!isFromClass<Classroom>(classroom, 'code'))
+      throw new Error('Wrong return from classroom service');
+
+    if (!isUserInClassroom(classroom, createPostDto.authorId))
+      throw new BadRequestException(
+        'Não é possível criar posts em classes ao qual o usuário não faz parte!',
       );
     return populateRelations(
       await this.postRepository.create({

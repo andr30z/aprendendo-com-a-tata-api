@@ -9,7 +9,7 @@ import { populateRelations } from 'src/database/populate-relations.util';
 import { isFromClass, isPureArrayOfClass, isValidMongoId } from 'src/Utils';
 import { CreateCommentDto } from '../dto';
 import { CommentRepository, PostRepository } from '../repositories';
-import { POPULATE_PATHS } from '../utils';
+import { isUserInClassroom, POPULATE_PATHS } from '../utils';
 
 @Injectable()
 export class CommentService {
@@ -46,14 +46,9 @@ export class CommentService {
       !isFromClass<User>(classroom?.teacher, 'email') ||
       !isPureArrayOfClass<User>(classroom?.members, 'email')
     )
-      throw new Error('Invalid Classroom object');
+      return new Error('Invalid Classroom object');
 
-    if (
-      !(classroom.teacher._id.toString() === createCommentDto.authorId) &&
-      !classroom.members.find(
-        (member) => member._id.toString() === createCommentDto.authorId,
-      )
-    )
+    if (!isUserInClassroom(classroom, createCommentDto.authorId))
       return new BadRequestException(
         'Não é possível criar comentários em posts de classes ao qual o usuário não faz parte!',
       );
