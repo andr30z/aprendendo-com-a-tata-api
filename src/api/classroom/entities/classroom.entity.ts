@@ -8,7 +8,7 @@ export type ClassroomDocument = Classroom & Document;
 
 @Schema({ timestamps: true })
 export class Classroom {
-  @Transform(({ obj, value }) => obj._id.toString())
+  @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;
 
   @Prop({ required: true })
@@ -27,6 +27,13 @@ export class Classroom {
   })
   @Type(() => User)
   members: Array<mongoose.Types.ObjectId>;
+
+  
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  })
+  @Type(() => User)
+  pendingJoinRequests: Array<mongoose.Types.ObjectId>;
 
   @Prop({ required: true })
   classPhoto: string;
