@@ -5,9 +5,9 @@ import { ActivityDificultyTypes, ActivityTypes } from '../types';
 
 export type ActivityDocument = Activity & Document;
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, strict: false })
 export class Activity {
-  @Transform(({obj}) => obj._id.toString())
+  @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;
 
   @Prop({ required: true })

@@ -35,6 +35,13 @@ export class Post {
   @Prop({ required: true })
   allowComments: boolean;
 
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Activity',
+    required: false,
+  })
+  activities: Array<mongoose.Types.ObjectId>;
+
   @Prop({ required: true })
   type: PostTypes;
 }
