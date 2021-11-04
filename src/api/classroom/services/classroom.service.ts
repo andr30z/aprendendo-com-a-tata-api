@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -135,21 +136,37 @@ export class ClassroomService {
     };
   }
 
+  throwErrorIfUserIsInArray(
+    array: Types.ObjectId[],
+    userId: string,
+    msg?: string,
+  ) {
+    if (array.find((member) => member._id.toString() === userId))
+      throw new ConflictException(msg || 'O usuário já é membro da classe.');
+  }
   async classroomInviteRequest(classroomId: string, userId: string) {
     isValidMongoId(classroomId);
     const user = await this.userService.getById(userId);
-
+    if (user.type !== UserType.C)
+      throw new BadRequestException(
+        'Para fazer parte de uma sala como membro, o usuário deve ser do tipo C',
+      );
     const classroom = await this.classroomRepository.findOneOrThrow(
       { _id: classroomId },
       () => new NotFoundException('Classe não encontrada.'),
     );
 
-    if (classroom.members.find((member) => member._id.toString() === userId))
-      throw new ConflictException('O usuário já é membro da classe.');
+    this.throwErrorIfUserIsInArray(
+      classroom.pendingJoinRequests,
+      userId,
+      'O Usuário já possui um pedido pendente para entrar na classe.',
+    );
+
+    this.throwErrorIfUserIsInArray(classroom.members, userId);
 
     classroom.pendingJoinRequests.push(user._id);
     await classroom.save();
 
-    return { success: 'Pedido registrado com sucesso' };
+    return { message: 'Pedido registrado com sucesso', success: true };
   }
 }
