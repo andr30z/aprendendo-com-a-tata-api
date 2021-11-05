@@ -83,9 +83,7 @@ export abstract class EntityRepository<T extends Document> {
    **/
   async create(createEntityData: AnyKeys<T>) {
     const entity = new this.entityModel(createEntityData);
-    const savedData = entity.save();
-
-    return savedData;
+    return entity.save();
   }
 
   /**

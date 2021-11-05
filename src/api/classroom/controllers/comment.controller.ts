@@ -35,6 +35,11 @@ export class CommentController {
     return this.commentService.findAll();
   }
 
+  @Get('post/:id')
+  getCommentsByPost(@Param('id') postId: string) {
+    return this.commentService.getCommentsByPost(postId);
+  }
+
   @Post()
   create(@Body() createCommenttDto: CreateCommentDto) {
     return this.commentService.create(createCommenttDto);

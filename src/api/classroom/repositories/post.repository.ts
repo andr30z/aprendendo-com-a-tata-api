@@ -15,9 +15,9 @@ export class PostRepository extends EntityRepository<PostDocument> {
   }
 
   async findByClass(classId: string) {
-    return populateRelations(
-      this.postModel.find({ classroom: new Types.ObjectId(classId) }),
-      [
+    return this.postModel
+      .find({ classroom: new Types.ObjectId(classId) })
+      .populate([
         'author',
         {
           path: 'classroom',
@@ -33,8 +33,7 @@ export class PostRepository extends EntityRepository<PostDocument> {
             },
           ],
         },
-      ],
-    );
+      ]);
 
     // .then((x) => {
     //   console.log(x);

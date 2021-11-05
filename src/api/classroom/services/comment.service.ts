@@ -3,27 +3,39 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Classroom } from '../entities';
-import { UsersRepository, User } from 'src/api/users';
+import { User, UsersRepository } from 'src/api/users';
 import { populateRelations } from 'src/database/populate-relations.util';
-import { isFromClass, isPureArrayOfClass, isValidMongoId } from 'src/Utils';
+import {
+  convertToMongoId,
+  isFromClass,
+  isPureArrayOfClass,
+  isValidMongoId,
+} from 'src/Utils';
 import { CreateCommentDto } from '../dto';
-import { CommentRepository, PostRepository } from '../repositories';
-import { isUserInClassroom, POPULATE_PATHS } from '../utils';
-
+import { Classroom } from '../entities';
+import { CommentRepository } from '../repositories';
+import { PostService } from '../services';
+import {
+  getPopulateComments,
+  isUserInClassroom,
+  POPULATE_PATHS,
+} from '../utils';
 @Injectable()
 export class CommentService {
   constructor(
-    private readonly postRepository: PostRepository,
+    private readonly postService: PostService,
     private readonly userRepository: UsersRepository,
     private readonly commentRepository: CommentRepository,
   ) {}
-
+  readonly commentPopulateWithoutClassroom = getPopulateComments(
+    false,
+    '-classroom',
+  );
   async findAll() {
     return {
       comments: await populateRelations(
         this.commentRepository.find(),
-        POPULATE_PATHS.COMMENT,
+        this.commentPopulateWithoutClassroom,
       ),
     };
   }
@@ -31,14 +43,7 @@ export class CommentService {
   async validateIfUserCanAddCommentaryOnPost(
     createCommentDto: CreateCommentDto,
   ) {
-    const post = await this.postRepository
-      .findOneWithPromise({
-        _id: createCommentDto.postId,
-      })
-      .populate(POPULATE_PATHS.POST)
-      .exec();
-    if (!post)
-      return new NotFoundException('O ID do Post informado não existe!');
+    const post = await this.postService.findOne(createCommentDto.postId);
 
     const classroom = post.classroom;
     if (
@@ -72,14 +77,15 @@ export class CommentService {
     );
     if (isInvalidError) throw isInvalidError;
 
-    return populateRelations(
-      await this.commentRepository.create({
+    return await this.commentRepository
+      .create({
         ...createCommentDto,
         post: createCommentDto.postId,
         author: createCommentDto.authorId,
-      }),
-      POPULATE_PATHS.COMMENT,
-    );
+      })
+      .then((comment) =>
+        comment.populate(this.commentPopulateWithoutClassroom),
+      );
   }
 
   async deleteOne(id: string) {
@@ -92,6 +98,15 @@ export class CommentService {
       throw new NotFoundException(
         'Não foi possivel encontrar um comentário com o ID informado!',
       );
-    return populateRelations(deleted, POPULATE_PATHS.COMMENT);
+    return deleted.populate(this.commentPopulateWithoutClassroom);
+  }
+
+  async getCommentsByPost(postId: string) {
+    const post = await this.postService.findOne(postId);
+    return {
+      comments: await this.commentRepository
+        .find({ post: post._id })
+        .populate(this.commentPopulateWithoutClassroom),
+    };
   }
 }

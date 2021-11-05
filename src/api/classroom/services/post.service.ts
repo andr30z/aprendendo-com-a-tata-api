@@ -47,9 +47,11 @@ export class PostService {
 
   async findOne(id: string) {
     isValidMongoId(id);
-    const post = await this.postRepository.findOne({ _id: id });
-    if (!post) throw new NotFoundException('Post não encontrado!');
-    return populateRelations(post, POPULATE_PATHS.POST);
+    const post = await this.postRepository.findOneOrThrow(
+      { _id: id },
+      () => new NotFoundException('Post não encontrado!'),
+    );
+    return post.populate(POPULATE_PATHS.POST);
   }
 
   async create(createPostDto: CreatePostDto) {
