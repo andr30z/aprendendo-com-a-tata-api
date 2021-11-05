@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsOptional, ValidateIf } from 'class-validator';
+import { Types } from 'mongoose';
 import { PostTypes } from 'src/api/classroom/types';
 
 export class CreatePostDto {
@@ -21,6 +22,12 @@ export class CreatePostDto {
   allowComments?: boolean;
 
   @IsEnum(PostTypes, { message: 'O campo type é inválido' })
-  @ApiProperty({ enum: { C: 'C', R: 'R', T: 'T' } })
+  @ApiProperty({ enum: { A: 'A', N: 'N', } })
   type: PostTypes;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsArray({ message: 'O campo activities deve ser um array!' })
+  @ValidateIf((dto) => dto.type === PostTypes.A)
+  activities?: Array<Types.ObjectId>
 }
