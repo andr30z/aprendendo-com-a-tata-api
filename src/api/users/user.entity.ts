@@ -10,7 +10,7 @@ export class User {
   @Prop({ required: true })
   name: string;
 
-  @Transform(({ value }) => value.toString())
+  @Transform(({ obj, value }) => obj._id.toString())
   _id: ObjectId;
 
   @Prop({ required: true })
@@ -29,6 +29,9 @@ export class User {
   @Prop()
   @Exclude({ toPlainOnly: true })
   currentHashedRefreshToken?: string;
+
+  @Prop()
+  profilePhoto?: string;
 
   //  toJSON() {
   //    return classToPlain(this);

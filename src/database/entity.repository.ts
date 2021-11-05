@@ -1,6 +1,6 @@
+import { HttpException } from '@nestjs/common';
 import {
   AnyKeys,
-  AnyObject,
   Document,
   FilterQuery,
   Model,
@@ -14,6 +14,31 @@ import {
  **/
 export abstract class EntityRepository<T extends Document> {
   constructor(protected readonly entityModel: Model<T>) {}
+
+  /**
+   * Same as findOne, but without the exec() at the end.
+   * @author andr3z0
+   **/
+  findOneWithPromise(
+    entityFilterQuery: FilterQuery<T>,
+    projection?: Record<string, unknown>,
+  ) {
+    return this.entityModel.findOne(entityFilterQuery, projection);
+  }
+
+  /**
+   * Same as find one, but if no ```T``` entity is finded then throw a callback error.
+   * @author andr3z0
+   **/
+  async findOneOrThrow(
+    entityFilterQuery: FilterQuery<T>,
+    throwCallback: () => HttpException,
+  ) {
+    const entity = await this.findOne(entityFilterQuery);
+    if (!entity) throw throwCallback();
+    return entity;
+  }
+
   /**
    * Find one operation
    * @author andr3z0
@@ -21,15 +46,18 @@ export abstract class EntityRepository<T extends Document> {
   async findOne(
     entityFilterQuery: FilterQuery<T>,
     projection?: Record<string, unknown>,
+    populatePath?: string,
   ) {
-    return this.entityModel.findOne(entityFilterQuery, projection).exec();
+    const query = this.entityModel.findOne(entityFilterQuery, projection);
+    if (populatePath) return query.populate(populatePath).exec();
+    return query.exec();
   }
 
   /**
    * Find
    * @author andr3z0
    **/
-  async find(entityFilterQuery?: FilterQuery<T>) {
+  find(entityFilterQuery?: FilterQuery<T>) {
     return this.entityModel.find(entityFilterQuery);
   }
 
@@ -89,5 +117,13 @@ export abstract class EntityRepository<T extends Document> {
    **/
   async deleteOne(entityFilterQuery: FilterQuery<T>) {
     return this.entityModel.deleteOne(entityFilterQuery);
+  }
+
+  /**
+   * Same as ```deleteOne```, but return the deleted document.
+   * @author andr3z0
+   **/
+  async deleteAndReturnDocument(entityFilterQuery: FilterQuery<T>) {
+    return this.entityModel.findOneAndDelete(entityFilterQuery);
   }
 }

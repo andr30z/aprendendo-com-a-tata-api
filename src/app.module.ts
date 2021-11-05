@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 import {
   AuthenticationController,
+  AuthenticationModule,
   AuthenticationService,
 } from './api/authentication';
 import { LocalStrategy } from './api/authentication/authentication.strategy';
@@ -14,6 +15,7 @@ import { JwtStrategy } from './api/authentication/jwt.strategy';
 import { UsersModule } from './api/users/users.module';
 import { ActivitiesModule } from './api/activities/activities.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ClassroomModule } from './api/classroom/classroom.module';
 const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
 
 @Module({
@@ -41,6 +43,7 @@ const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
     }),
     UsersModule,
     ActivitiesModule,
+    ClassroomModule,
   ],
   providers: [
     AuthenticationService,

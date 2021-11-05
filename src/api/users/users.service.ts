@@ -1,7 +1,9 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { isValidObjectId } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -9,6 +11,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from './users.repository';
 import * as bcrypt from 'bcrypt';
 import { LoginCredentialsWithRequest } from '../authentication/types';
+import { isValidMongoId } from 'src/Utils';
 
 @Injectable()
 export class UsersService {
@@ -22,8 +25,8 @@ export class UsersService {
     return this.usersRepository.create(createUserDto);
   }
 
-  findAll() {
-    return this.usersRepository.find();
+  async findAll() {
+    return { users: await this.usersRepository.find() };
   }
   async setCurrentRefreshToken(refreshToken: string, userId: string) {
     const currentHashedRefreshToken = await bcrypt.hash(refreshToken, 10);
@@ -51,12 +54,11 @@ export class UsersService {
   }
 
   getById(id: string) {
-    console.log('id', id)
-    if (!isValidObjectId(id))
-      throw new BadRequestException(
-        'Id informado não atende aos requisitos do MongoDB',
-      );
-    return this.usersRepository.findOne({ _id: id });
+    isValidMongoId(id, 'Id informado não atende aos requisitos do MongoDB');
+    return this.usersRepository.findOneOrThrow(
+      { _id: id },
+      () => new NotFoundException('Usuário não encontrado'),
+    );
   }
 
   update(id: string, updateUserDto: UpdateUserDto) {
