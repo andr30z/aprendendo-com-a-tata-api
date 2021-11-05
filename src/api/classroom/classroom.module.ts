@@ -1,5 +1,6 @@
 import { CacheModule, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ActivitiesModule } from '../activities/activities.module';
 import { UsersModule } from '../users';
 import { ClassroomController, PostController, CommentController } from './controllers';
 import {
@@ -37,6 +38,7 @@ import { ClassroomService, PostService, CommentService } from './services';
   ],
   imports: [
     UsersModule,
+    ActivitiesModule,
     CacheModule.register(),
     MongooseModule.forFeature([
       { name: Classroom.name, schema: ClassroomSchema },

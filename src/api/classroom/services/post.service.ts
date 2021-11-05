@@ -11,6 +11,8 @@ import { PostRepository } from '../repositories';
 import { ClassroomService } from '../services/classroom.service';
 import { isUserInClassroom, POPULATE_PATHS } from '../utils';
 import { Classroom } from '../entities';
+import { ActivitiesService } from 'src/api/activities/services';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class PostService {
@@ -18,7 +20,10 @@ export class PostService {
     private readonly postRepository: PostRepository,
     private readonly userService: UsersService,
     private readonly classroomService: ClassroomService,
+    private readonly activitiesService: ActivitiesService
   ) { }
+
+  readonly populateWithoutActivityObject = [...POPULATE_PATHS.POST, { path: 'activities', model: 'Activity', select: '_id' }]
   async findAll() {
     return {
       posts: await this.postRepository
@@ -42,7 +47,7 @@ export class PostService {
         'Não foi possível encontrar um post com o ID informado!',
       );
 
-    return populateRelations(document, POPULATE_PATHS.POST);
+    return populateRelations(document, this.populateWithoutActivityObject);
   }
 
   async findOne(id: string) {
@@ -51,7 +56,14 @@ export class PostService {
       { _id: id },
       () => new NotFoundException('Post não encontrado!'),
     );
-    return post.populate(POPULATE_PATHS.POST);
+    return post.populate(this.populateWithoutActivityObject);
+  }
+
+
+  async activitiesHasErrors(dtoActivities: Types.ObjectId[]) {
+    const activites = await this.activitiesService.findManyById(dtoActivities).then(a => a.activities.map(act => act._id))
+    return activites.length !== dtoActivities.length
+
   }
 
   async create(createPostDto: CreatePostDto) {
@@ -68,6 +80,8 @@ export class PostService {
         `Classe de ID: ${createPostDto.classroomId} não existe`,
       );
 
+    if (createPostDto.activities && await this.activitiesHasErrors(createPostDto.activities)) throw new NotFoundException('Uma ou mais atividades não existem!')
+
     if (!isFromClass<Classroom>(classroom, 'code'))
       throw new Error('Wrong return from classroom service');
 
@@ -75,7 +89,7 @@ export class PostService {
       throw new BadRequestException(
         'Não é possível criar posts em classes ao qual o usuário não faz parte!',
       );
-    return await this.postRepository.create({
+    const post = await this.postRepository.create({
       ...createPostDto,
       author: createPostDto.authorId,
       classroom: createPostDto.classroomId,
@@ -83,7 +97,9 @@ export class PostService {
         createPostDto.allowComments === undefined
           ? true
           : createPostDto.allowComments,
-    }).then(post => post.populate(POPULATE_PATHS.POST))
+    });
+
+    return await post.populate(this.populateWithoutActivityObject);
   }
 
   async deleteOne(id: string) {
@@ -96,6 +112,6 @@ export class PostService {
       throw new NotFoundException(
         'Não foi possivel encontrar um post com o ID informado!',
       );
-    return populateRelations(deleted, POPULATE_PATHS.POST);
+    return populateRelations(deleted, this.populateWithoutActivityObject);
   }
 }

@@ -5,6 +5,7 @@ import { Document, ObjectId } from 'mongoose';
 import { PostTypes } from 'src/api/classroom/types';
 import { Classroom } from 'src/api/classroom/entities/classroom.entity';
 import { User } from 'src/api/users';
+import { Activity } from 'src/api/activities/entities/activity.entity';
 
 export type PostDocument = Post & Document;
 
@@ -38,6 +39,7 @@ export class Post {
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Activity', required: false, }],
   })
+  @Type(() => Activity)
   activities: Array<mongoose.Types.ObjectId>;
 
   @Prop({ required: true })
