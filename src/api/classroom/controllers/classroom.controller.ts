@@ -80,7 +80,7 @@ export class ClassroomController {
     return this.classroomService.findOne(id);
   }
 
-  @Post(':classId/:userId')
+  @Post('join-request/:classId/:userId')
   async joinClassroomRequest(
     @Param('classId') classId: string,
     @Param('userId') userId: string,
