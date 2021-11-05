@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from 'src/api/users';
 import { populateRelations } from 'src/database/populate-relations.util';
-import { isFromClass, isValidMongoId } from 'src/Utils';
+import { isFromClass, isValidMongoId } from 'src/utils';
 import { CreatePostDto, UpdatePostDto } from '../dto';
 import { PostRepository } from '../repositories';
 import { ClassroomService } from '../services/classroom.service';

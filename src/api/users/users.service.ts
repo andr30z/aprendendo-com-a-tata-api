@@ -11,7 +11,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersRepository } from './users.repository';
 import * as bcrypt from 'bcrypt';
 import { LoginCredentialsWithRequest } from '../authentication/types';
-import { isValidMongoId } from 'src/Utils';
+import { isValidMongoId } from 'src/utils';
 
 @Injectable()
 export class UsersService {

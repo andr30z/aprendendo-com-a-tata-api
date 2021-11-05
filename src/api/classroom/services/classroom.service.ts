@@ -9,7 +9,7 @@ import { Document, Types } from 'mongoose';
 import { nanoid } from 'nanoid';
 import { UsersService, UserType } from 'src/api/users';
 import { populateRelations } from 'src/database/populate-relations.util';
-import { isValidMongoId } from 'src/Utils';
+import { isValidMongoId } from 'src/utils';
 import { User } from '../../users';
 import { CreateClassroomDto } from '../dto/create-classroom.dto';
 import { UpdateClassroomDto } from '../dto/update-classroom.dto';
