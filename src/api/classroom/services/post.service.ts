@@ -18,7 +18,7 @@ export class PostService {
     private readonly postRepository: PostRepository,
     private readonly userService: UsersService,
     private readonly classroomService: ClassroomService,
-  ) {}
+  ) { }
   async findAll() {
     return {
       posts: await this.postRepository
@@ -75,18 +75,15 @@ export class PostService {
       throw new BadRequestException(
         'Não é possível criar posts em classes ao qual o usuário não faz parte!',
       );
-    return populateRelations(
-      await this.postRepository.create({
-        ...createPostDto,
-        author: createPostDto.authorId,
-        classroom: createPostDto.classroomId,
-        allowComments:
-          createPostDto.allowComments === undefined
-            ? true
-            : createPostDto.allowComments,
-      }),
-      POPULATE_PATHS.POST,
-    );
+    return await this.postRepository.create({
+      ...createPostDto,
+      author: createPostDto.authorId,
+      classroom: createPostDto.classroomId,
+      allowComments:
+        createPostDto.allowComments === undefined
+          ? true
+          : createPostDto.allowComments,
+    }).then(post => post.populate(POPULATE_PATHS.POST))
   }
 
   async deleteOne(id: string) {
