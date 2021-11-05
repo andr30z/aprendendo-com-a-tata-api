@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateClassroomDto {
   @ApiProperty()
@@ -7,19 +7,24 @@ export class CreateClassroomDto {
   teacherId: string;
 
   @ApiProperty()
-  @IsNotEmpty({ message: 'O campo nome é obrigatório!' })
+  @IsString({ message: "O campo name é uma string" })
+  @IsNotEmpty({ message: 'O campo name é obrigatório!' })
   name: string;
 
   @ApiProperty()
-  @IsNotEmpty({ message: 'A foto da classe é obrigatória!' })
+  @IsNotEmpty({ message: 'O campo classPhoto é obrigatório!' })
   classPhoto: string;
   @ApiProperty()
+  @IsOptional()
+  @IsString({ message: "O campo description é uma string" })
   description: string;
   @ApiProperty()
-  @IsNotEmpty({ message: 'A cor da classe é obrigatória!' })
+  @IsString({ message: "O campo color é uma string" })
+  @IsNotEmpty({ message: 'O campo color é obrigatório!' })
   color: string;
   @ApiProperty()
-  @IsNotEmpty({ message: 'A cor de texto da classe é obrigatória!' })
+  @IsString({ message: "O campo textColor é uma string" })
+  @IsNotEmpty({ message: 'O campo textColor é obrigatório!' })
   textColor: string;
   @ApiProperty()
   tags: Array<string>;
