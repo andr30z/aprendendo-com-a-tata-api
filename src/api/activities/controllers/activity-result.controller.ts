@@ -6,19 +6,17 @@ import {
   Param,
   Post,
   UseGuards,
-  UseInterceptors,
+  UseInterceptors
 } from '@nestjs/common';
-import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import JwtAuthenticationGuard from 'src/api/authentication/jwt-authentication.guard';
 import {
-  MongoSerializerInterceptor,
-  NotFoundInterceptor,
+  MongoSerializerInterceptor
 } from 'src/interceptors';
-import { ActivityResult } from '../entities';
 import { UpsertActivityResultDto } from '../dto';
+import { ActivityResult } from '../entities';
 import { ActivityResultService } from '../services';
 
-@UseInterceptors(new NotFoundInterceptor())
 @UseInterceptors(MongoSerializerInterceptor(ActivityResult))
 @ApiCookieAuth()
 @ApiTags('Activity Result')
@@ -36,9 +34,13 @@ export class ActivityResultController {
     return this.activityResultService.findAll();
   }
 
-  @Post('user/:id')
+  @ApiOperation({
+    description:
+    'This endpoint executes an Upsert operation, i.e: if activityResultId provided on body request is null (or not found in database) it will create and return a new ActivityResult entity, otherwise will update the existing document',
+  })
+  @Post('upsert/user/:id')
   createOrUpdateResult(
-    @Param('id') userId,
+    @Param('id') userId: string,
     @Body() activityResultUpsertDto: UpsertActivityResultDto,
   ) {
     return this.activityResultService.upsertActivityResult(

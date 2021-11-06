@@ -29,10 +29,10 @@ export class ActivityResult {
     required: true,
   })
   @Type(() => Activity)
-  activityResult: Activity;
+  activity: Activity;
 
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   result: number;
 
   @Prop({ required: true })

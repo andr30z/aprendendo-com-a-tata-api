@@ -1,18 +1,22 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException,
+  NotFoundException
 } from '@nestjs/common';
+import { Types } from 'mongoose';
+import {
+  ActivitiesService,
+  ActivityResult,
+  ActivityResultService
+} from 'src/api/activities';
 import { UsersService } from 'src/api/users';
 import { populateRelations } from 'src/database/populate-relations.util';
 import { isFromClass, isValidMongoId } from 'src/utils';
 import { CreatePostDto, UpdatePostDto } from '../dto';
+import { Classroom } from '../entities';
 import { PostRepository } from '../repositories';
 import { ClassroomService } from '../services/classroom.service';
 import { isUserInClassroom, POPULATE_PATHS } from '../utils';
-import { Classroom } from '../entities';
-import { ActivitiesService } from 'src/api/activities/services';
-import { Types } from 'mongoose';
 
 @Injectable()
 export class PostService {
@@ -20,10 +24,14 @@ export class PostService {
     private readonly postRepository: PostRepository,
     private readonly userService: UsersService,
     private readonly classroomService: ClassroomService,
-    private readonly activitiesService: ActivitiesService
-  ) { }
+    private readonly activitiesService: ActivitiesService,
+    private readonly activityResultService: ActivityResultService,
+  ) {}
 
-  readonly populateWithoutActivityObject = [...POPULATE_PATHS.POST, { path: 'activities', model: 'Activity', select: '_id' }]
+  readonly populateWithoutActivityObject = [
+    ...POPULATE_PATHS.POST,
+    { path: 'activities', model: 'Activity', select: '_id' },
+  ];
   async findAll() {
     return {
       posts: await this.postRepository
@@ -59,11 +67,11 @@ export class PostService {
     return post.populate(this.populateWithoutActivityObject);
   }
 
-
-  async activitiesHasErrors(dtoActivities: Types.ObjectId[]) {
-    const activites = await this.activitiesService.findManyById(dtoActivities).then(a => a.activities.map(act => act._id))
-    return activites.length !== dtoActivities.length
-
+  async allActivitiesExists(dtoActivities: Types.ObjectId[]) {
+    const activites = await this.activitiesService
+      .findManyById(dtoActivities)
+      .then((a) => a.activities.map((act) => act._id));
+    return activites.length !== dtoActivities.length;
   }
 
   async create(createPostDto: CreatePostDto) {
@@ -80,7 +88,11 @@ export class PostService {
         `Classe de ID: ${createPostDto.classroomId} não existe`,
       );
 
-    if (createPostDto.activities && await this.activitiesHasErrors(createPostDto.activities)) throw new NotFoundException('Uma ou mais atividades não existem!')
+    if (
+      createPostDto.activities &&
+      (await this.allActivitiesExists(createPostDto.activities))
+    )
+      throw new NotFoundException('Uma ou mais atividades não existem!');
 
     if (!isFromClass<Classroom>(classroom, 'code'))
       throw new Error('Wrong return from classroom service');
@@ -100,6 +112,25 @@ export class PostService {
     });
 
     return await post.populate(this.populateWithoutActivityObject);
+  }
+
+  async getUserActivityResultsFromUserByPost(postId: string, userId: string) {
+    const user = await this.userService.getById(userId);
+    const post = await this.findOne(postId).then((p) =>
+      p.populate('activitiesResult'),
+    );
+    if (!post.activities || !post.activitiesResult)
+      throw new BadRequestException('O post informado não possui atividades!');
+    const results = post.activitiesResult;
+
+    const userActivities = results.filter((activityResult) => {
+      if (isFromClass<ActivityResult>(activityResult, 'activityAnswer'))
+        return activityResult.user._id === user._id;
+      else throw new Error('Wrong return from post repository!');
+    });
+    return {
+      activitiesResults: userActivities,
+    };
   }
 
   async deleteOne(id: string) {

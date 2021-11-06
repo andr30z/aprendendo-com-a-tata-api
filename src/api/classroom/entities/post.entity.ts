@@ -2,17 +2,16 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Transform, Type } from 'class-transformer';
 import * as mongoose from 'mongoose';
 import { Document, ObjectId } from 'mongoose';
-import { ActivityResult } from 'src/api/activities';
-import { Activity } from 'src/api/activities/entities/activity.entity';
-import { Classroom } from 'src/api/classroom/entities/classroom.entity';
 import { PostTypes } from 'src/api/classroom/types';
+import { Classroom } from 'src/api/classroom/entities/classroom.entity';
 import { User } from 'src/api/users';
+import { ActivityResult, Activity } from 'src/api/activities';
 
 export type PostDocument = Post & Document;
 
 @Schema({ timestamps: true })
 export class Post {
-  @Transform(({ obj }) => obj._id.toString())
+  @Transform(({ obj, value }) => obj._id.toString())
   _id: ObjectId;
 
   @Prop({ required: true })
