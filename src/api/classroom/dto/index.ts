@@ -3,3 +3,4 @@ export * from './update-classroom.dto';
 export * from './create-post.dto';
 export * from './update-post.dto';
 export * from './create-comment.dto';
+export * from './start-activity.dto';

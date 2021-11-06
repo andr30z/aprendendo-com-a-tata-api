@@ -17,7 +17,7 @@ import {
   MongoSerializerInterceptor,
   NotFoundInterceptor,
 } from 'src/interceptors';
-import { CreatePostDto, UpdatePostDto } from '../dto';
+import { CreatePostDto, StartActivityDto, UpdatePostDto } from '../dto';
 import { PostService } from '../services';
 
 @UseInterceptors(new NotFoundInterceptor())
@@ -53,5 +53,24 @@ export class PostController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.postService.findOne(id);
+  }
+
+  @Post(':id/start-activity')
+  startActivity(
+    @Param('id') userId: string,
+    @Body() startActivityDto: StartActivityDto,
+  ) {
+    return this.postService.startActivity(userId, startActivityDto);
+  }
+
+  @Get(':id/user/:userId')
+  getActivitiesResultsByPost(
+    @Param('id') postId: string,
+    @Param('userId') userId: string,
+  ) {
+    return this.postService.getUserActivityResultsFromUserByPost(
+      postId,
+      userId,
+    );
   }
 }

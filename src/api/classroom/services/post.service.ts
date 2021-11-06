@@ -1,22 +1,28 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException
+  NotFoundException,
 } from '@nestjs/common';
-import { Types } from 'mongoose';
+import { PopulateOptions, Types } from 'mongoose';
 import {
   ActivitiesService,
-  ActivityResult,
-  ActivityResultService
+  ActivityResultRepository,
+  ActivityResultService,
 } from 'src/api/activities';
 import { UsersService } from 'src/api/users';
 import { populateRelations } from 'src/database/populate-relations.util';
-import { isFromClass, isValidMongoId } from 'src/utils';
-import { CreatePostDto, UpdatePostDto } from '../dto';
+import { convertToMongoId, isFromClass, isValidMongoId } from 'src/utils';
+import { CreatePostDto, StartActivityDto, UpdatePostDto } from '../dto';
 import { Classroom } from '../entities';
 import { PostRepository } from '../repositories';
 import { ClassroomService } from '../services/classroom.service';
-import { isUserInClassroom, POPULATE_PATHS } from '../utils';
+import { PostActivityResult, PostTypes } from '../types';
+import {
+  isUserInClassroom,
+  POPULATE_PATHS,
+  resolveActivityResult,
+  startActivityValidation,
+} from '../utils';
 
 @Injectable()
 export class PostService {
@@ -26,6 +32,7 @@ export class PostService {
     private readonly classroomService: ClassroomService,
     private readonly activitiesService: ActivitiesService,
     private readonly activityResultService: ActivityResultService,
+    private readonly activityResultRepository: ActivityResultRepository,
   ) {}
 
   readonly populateWithoutActivityObject = [
@@ -103,33 +110,116 @@ export class PostService {
       );
     const post = await this.postRepository.create({
       ...createPostDto,
+      activities:
+        PostTypes.A === createPostDto.type
+          ? createPostDto.activities || []
+          : null,
       author: createPostDto.authorId,
       classroom: createPostDto.classroomId,
+      postActivityResult: createPostDto.type === PostTypes.A ? [] : null,
       allowComments:
         createPostDto.allowComments === undefined
           ? true
           : createPostDto.allowComments,
     });
 
+    console.log(createPostDto);
+
     return await post.populate(this.populateWithoutActivityObject);
+  }
+
+  getPostWithActivityResultPopulate(
+    postId: string,
+    otherPopulates: Array<PopulateOptions> = [],
+  ) {
+    return this.findOne(postId).then((p) =>
+      p.populate([
+        {
+          path: 'postActivityResult',
+          populate: [
+            {
+              path: 'activityResult',
+              model: 'ActivityResult',
+            },
+          ],
+        },
+        ...otherPopulates,
+      ]),
+    );
   }
 
   async getUserActivityResultsFromUserByPost(postId: string, userId: string) {
     const user = await this.userService.getById(userId);
-    const post = await this.findOne(postId).then((p) =>
-      p.populate('activitiesResult'),
-    );
-    if (!post.activities || !post.activitiesResult)
+    const post = await this.getPostWithActivityResultPopulate(postId);
+    if (!post.activities || !post.postActivityResult)
       throw new BadRequestException('O post informado não possui atividades!');
-    const results = post.activitiesResult;
-
-    const userActivities = results.filter((activityResult) => {
-      if (isFromClass<ActivityResult>(activityResult, 'activityAnswer'))
-        return activityResult.user._id === user._id;
-      else throw new Error('Wrong return from post repository!');
+    const results = post.postActivityResult;
+    console.log(results);
+    const userActivities = results.filter((postActivityResult) => {
+      postActivityResult.user._id.equals(userId);
     });
     return {
       activitiesResults: userActivities,
+    };
+  }
+
+  async startActivity(postId: string, startActivityDto: StartActivityDto) {
+    const user = await this.userService.getById(startActivityDto.userId);
+    const post = await this.getPostWithActivityResultPopulate(postId, [
+      {
+        path: 'classroom',
+        model: 'Classroom',
+        select: 'teacher members',
+      },
+      {
+        path: 'postActivityResult',
+        model: 'PostActivityResut',
+        populate: [
+          {
+            path: 'activitiesResult',
+            model: 'ActivityResult',
+          },
+        ],
+      },
+    ]);
+
+    const postActivities =
+      post.postActivityResult || ([] as Types.Array<PostActivityResult>);
+    startActivityValidation(post, startActivityDto);
+    const userPostActivityResultIndex = postActivities.findIndex((p) =>
+      p.user._id.equals(startActivityDto.userId),
+    );
+    const activityResult = await this.activityResultRepository.create({
+      ...startActivityDto,
+      activity: convertToMongoId(startActivityDto.activityId),
+      user: user._id,
+      result: 0,
+    });
+    if (userPostActivityResultIndex === -1)
+      postActivities.push({
+        user: user._id,
+        activitiesResult: [activityResult._id],
+      });
+    else {
+      const postActivityResultItem =
+        postActivities[userPostActivityResultIndex];
+      postActivities[userPostActivityResultIndex] = {
+        ...postActivityResultItem,
+        user: postActivityResultItem.user,
+        activitiesResult: resolveActivityResult(
+          activityResult._id,
+          startActivityDto.activityId,
+          postActivityResultItem.activitiesResult as any,
+        ),
+      };
+    }
+
+    post.postActivityResult = postActivities;
+    await post.save();
+
+    return {
+      success: true,
+      message: 'Atividade iniciada com sucesso!',
     };
   }
 

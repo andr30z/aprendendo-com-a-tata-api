@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsMongoId, IsNotEmpty } from 'class-validator';
+import { IsBoolean, IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
 import { Types } from 'mongoose';
 import { ActivityAnswers } from '../types';
 
@@ -11,8 +11,9 @@ export class UpsertActivityResultDto {
   @IsMongoId({ message: 'O campo activityId não é um ID válido!' })
   activityId: string;
   @ApiProperty()
+  @IsOptional()
   @IsMongoId({ message: 'O campo activityResultId não é um ID válido!' })
-  activityResultId: string;
+  activityResultId?: string;
 
   @ApiProperty()
   @IsBoolean({ message: 'O campo finished deve ser do tipo booleano' })
@@ -20,5 +21,5 @@ export class UpsertActivityResultDto {
 
   @ApiProperty()
   @IsNotEmpty({ message: 'O campo activityAnswers é obrigatório!' })
-  activityAnswers: ActivityAnswers;
+  activityAnswers: Array<ActivityAnswers>;
 }

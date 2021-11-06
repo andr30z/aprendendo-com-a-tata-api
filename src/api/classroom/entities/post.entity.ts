@@ -5,7 +5,8 @@ import { Document, ObjectId } from 'mongoose';
 import { PostTypes } from 'src/api/classroom/types';
 import { Classroom } from 'src/api/classroom/entities/classroom.entity';
 import { User } from 'src/api/users';
-import { ActivityResult, Activity } from 'src/api/activities';
+import { PostActivityResult, PostActivityResultSchema } from '../types';
+import { Activity } from 'src/api/activities';
 
 export type PostDocument = Post & Document;
 
@@ -37,6 +38,7 @@ export class Post {
   allowComments: boolean;
 
   @Prop({
+    required: false,
     type: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -46,19 +48,10 @@ export class Post {
     ],
   })
   @Type(() => Activity)
-  activities: Array<mongoose.Types.ObjectId>;
+  activities?: Array<mongoose.Types.ObjectId>;
 
-  @Prop({
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'ActivityResult',
-        required: false,
-      },
-    ],
-  })
-  @Type(() => ActivityResult)
-  activitiesResult?: Array<mongoose.Types.ObjectId>;
+  @Prop({ required: false, type: [PostActivityResultSchema] })
+  postActivityResult?: mongoose.Types.Array<PostActivityResult>;
 
   @Prop({ required: true })
   type: PostTypes;

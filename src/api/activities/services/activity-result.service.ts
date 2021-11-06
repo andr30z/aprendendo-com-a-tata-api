@@ -48,7 +48,12 @@ export class ActivityResultService {
         _id: convertToMongoId(activityResultDto.activityResultId),
         user: user._id,
       },
-      { ...activityResultDto, result: result ? result : 0 },
+      {
+        ...activityResultDto,
+        user: userId,
+        activity: activityResultDto.activityId,
+        result: result ? result : 0,
+      },
     );
   }
 

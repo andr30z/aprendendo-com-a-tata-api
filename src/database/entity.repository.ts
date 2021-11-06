@@ -127,20 +127,19 @@ export abstract class EntityRepository<T extends Document> {
     return this.entityModel.findOneAndDelete(entityFilterQuery);
   }
 
-
   /**
-  * Same as findOneAndUpdate, but this use ```upsert``` prop by default.
-  * @author andr3z0
-  **/
+   * Same as findOneAndUpdate, but this use ```upsert``` prop by default.
+   * @author andr3z0
+   **/
   async upsert(
     entityFilterQuery: FilterQuery<T>,
-    updateEntityData: UpdateQuery<unknown>,
+    updateEntityData: UpdateQuery<T>,
     queryOptions?: QueryOptions,
   ) {
     return this.entityModel.findOneAndUpdate(
       entityFilterQuery,
       updateEntityData,
-      { ...queryOptions, upsert: true },
+      { ...queryOptions, upsert: true, new: true },
     );
   }
 }

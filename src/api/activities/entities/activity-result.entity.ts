@@ -2,12 +2,12 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Transform, Type } from 'class-transformer';
 import { Document, ObjectId, Schema as MongooseSchema, Types } from 'mongoose';
 import { User } from 'src/api/users';
-import { ActivityAnswers } from '../types';
+import { ActivityAnswers, ActivityAnswersSchema } from '../types';
 import { Activity } from './activity.entity';
 
 export type ActivityResultDocument = ActivityResult & Document;
 
-@Schema({ timestamps: true, })
+@Schema({ timestamps: true })
 export class ActivityResult {
   @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;
@@ -29,14 +29,13 @@ export class ActivityResult {
     required: true,
   })
   @Type(() => Activity)
-  activity: Activity;
-
+  activity: Types.ObjectId;
 
   @Prop({ required: false })
   result: number;
 
-  @Prop({ required: true })
-  activityAnswers: ActivityAnswers;
+  @Prop({ required: true, type: [ActivityAnswersSchema] })
+  activityAnswers: Types.Array<ActivityAnswers>;
 }
 
 export const ActivityResultSchema =
