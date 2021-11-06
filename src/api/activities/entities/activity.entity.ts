@@ -1,7 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Transform } from 'class-transformer';
 import { Document, ObjectId, Schema as MongooseSchema } from 'mongoose';
-import { ActivityDificultyTypes, ActivityTypes } from '../types';
+import {
+  ActivityDificultyTypes,
+  ActivityTypes,
+  AvaliationMethods,
+} from '../types';
 
 export type ActivityDocument = Activity & Document;
 
@@ -27,6 +31,12 @@ export class Activity {
 
   @Prop({ required: true, type: MongooseSchema.Types.Mixed })
   stages: any;
+
+  @Prop()
+  avaliationMethod: AvaliationMethods;
+  
+  @Prop()
+  acceptWrongAnswers: boolean;
 
   @Prop({ required: true })
   tags: Array<String>;

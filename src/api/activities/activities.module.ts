@@ -1,16 +1,32 @@
 import { CacheModule, Module } from '@nestjs/common';
-import { ActivitiesService } from './services';
-import { ActivitiesController } from './controllers';
-import { ActivitiesRepository } from './repositories';
+import { ActivitiesService, ActivityResultService } from './services';
+import { ActivitiesController, ActivityResultController } from './controllers';
+import { ActivitiesRepository, ActivityResultRepository } from './repositories';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Activity, ActivitySchema } from './entities/activity.entity';
-import { ActivityResult, ActivityResultSchema } from './entities';
+import {
+  ActivityResult,
+  ActivityResultSchema,
+  Activity,
+  ActivitySchema,
+} from './entities';
+import { UsersModule } from '../users';
 
 @Module({
-  controllers: [ActivitiesController],
-  providers: [ActivitiesService, ActivitiesRepository],
-  exports: [ActivitiesService, ActivitiesRepository],
+  controllers: [ActivitiesController, ActivityResultController],
+  providers: [
+    ActivitiesService,
+    ActivitiesRepository,
+    ActivityResultRepository,
+    ActivityResultService,
+  ],
+  exports: [
+    ActivitiesService,
+    ActivitiesRepository,
+    ActivityResultRepository,
+    ActivityResultService,
+  ],
   imports: [
+    UsersModule,
     CacheModule.register(),
     MongooseModule.forFeature([
       { name: Activity.name, schema: ActivitySchema },
@@ -18,4 +34,4 @@ import { ActivityResult, ActivityResultSchema } from './entities';
     ]),
   ],
 })
-export class ActivitiesModule { }
+export class ActivitiesModule {}
