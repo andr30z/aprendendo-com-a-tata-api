@@ -2,12 +2,13 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Transform, Type } from 'class-transformer';
 import { Document, ObjectId, Schema as MongooseSchema, Types } from 'mongoose';
 import { User } from 'src/api/users';
+import { DEFAULT_MONGOOSE_SCHEMA_OPTIONS } from 'src/database';
 import { ActivityAnswers, ActivityAnswersSchema } from '../types';
 import { Activity } from './activity.entity';
 
 export type ActivityResultDocument = ActivityResult & Document;
 
-@Schema({ timestamps: true })
+@Schema(DEFAULT_MONGOOSE_SCHEMA_OPTIONS)
 export class ActivityResult {
   @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;

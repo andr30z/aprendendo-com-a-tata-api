@@ -7,10 +7,10 @@ import { Classroom } from 'src/api/classroom/entities/classroom.entity';
 import { User } from 'src/api/users';
 import { PostActivityResult, PostActivityResultSchema } from '../types';
 import { Activity } from 'src/api/activities';
-
+import { DEFAULT_MONGOOSE_SCHEMA_OPTIONS } from 'src/database';
 export type PostDocument = Post & Document;
 
-@Schema({ timestamps: true })
+@Schema(DEFAULT_MONGOOSE_SCHEMA_OPTIONS)
 export class Post {
   @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;

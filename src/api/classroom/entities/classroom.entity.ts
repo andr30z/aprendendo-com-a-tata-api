@@ -3,10 +3,11 @@ import { Transform, Type } from 'class-transformer';
 import * as mongoose from 'mongoose';
 import { Document, ObjectId } from 'mongoose';
 import { User } from 'src/api/users';
+import { DEFAULT_MONGOOSE_SCHEMA_OPTIONS } from 'src/database';
 
 export type ClassroomDocument = Classroom & Document;
 
-@Schema({ timestamps: true })
+@Schema(DEFAULT_MONGOOSE_SCHEMA_OPTIONS)
 export class Classroom {
   @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;

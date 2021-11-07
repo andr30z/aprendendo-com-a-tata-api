@@ -1,11 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Exclude, Transform } from 'class-transformer';
 import { Document, ObjectId } from 'mongoose';
+import { getDefaultSchemaOption } from 'src/database';
 import { UserType } from './types/user.type';
 
 export type UserDocument = User & Document;
 
-@Schema({ timestamps: true })
+@Schema(getDefaultSchemaOption())
 export class User {
   @Prop({ required: true })
   name: string;

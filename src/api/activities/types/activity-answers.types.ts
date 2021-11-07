@@ -1,9 +1,10 @@
 import { Prop, Schema as NestSchema, SchemaFactory } from '@nestjs/mongoose';
 import { Transform } from 'class-transformer';
 import { Document, ObjectId, Schema, Types } from 'mongoose';
+import { DEFAULT_MONGOOSE_SCHEMA_OPTIONS } from 'src/database';
 export type ActivityAnswersDocument = ActivityAnswers & Document;
-@NestSchema({ timestamps: true })
-export class ActivityAnswers  {
+@NestSchema(DEFAULT_MONGOOSE_SCHEMA_OPTIONS)
+export class ActivityAnswers {
   @Transform(({ value }) => value.toString())
   _id: ObjectId;
 

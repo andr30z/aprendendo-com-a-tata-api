@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Transform } from 'class-transformer';
 import { Document, ObjectId, Schema as MongooseSchema } from 'mongoose';
+import { DEFAULT_MONGOOSE_SCHEMA_OPTIONS } from 'src/database';
 import {
   ActivityDificultyTypes,
   ActivityTypes,
@@ -9,7 +10,7 @@ import {
 
 export type ActivityDocument = Activity & Document;
 
-@Schema({ timestamps: true, strict: false })
+@Schema({ ...DEFAULT_MONGOOSE_SCHEMA_OPTIONS, strict: false })
 export class Activity {
   @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;

@@ -7,9 +7,10 @@ import { Transform, Type } from 'class-transformer';
 import { Types, Schema, ObjectId, Document } from 'mongoose';
 import { User } from 'src/api/users';
 import { ActivityResult } from 'src/api/activities';
+import { DEFAULT_MONGOOSE_SCHEMA_OPTIONS } from 'src/database';
 
 export type PostActivityResultDocument = PostActivityResult & Document;
-@MongooseSchema({ timestamps: true })
+@MongooseSchema(DEFAULT_MONGOOSE_SCHEMA_OPTIONS)
 export class PostActivityResult {
   @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;

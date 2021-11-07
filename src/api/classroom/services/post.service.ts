@@ -167,7 +167,7 @@ export class PostService {
             {
               path: 'user',
               model: 'User',
-              select: '-password -currentHashedRefreshToken',
+              // select: '-password -currentHashedRefreshToken',
             },
           ],
         },

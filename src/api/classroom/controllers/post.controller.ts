@@ -36,25 +36,21 @@ export class PostController {
   }
 
   @Put(':id')
-  @UseInterceptors(MongoSerializerInterceptor(Post))
   update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
     return this.postService.update(id, updatePostDto);
   }
 
   @PostMethod()
-  @UseInterceptors(MongoSerializerInterceptor(Post))
   async create(@Body() createPostDto: CreatePostDto) {
     return await this.postService.create(createPostDto);
   }
 
   @Delete(':id')
-  @UseInterceptors(MongoSerializerInterceptor(Post))
   deleteOne(@Param('id') id: string) {
     return this.postService.deleteOne(id);
   }
 
   @Get(':id')
-  @UseInterceptors(MongoSerializerInterceptor(Post))
   findOne(@Param('id') id: string) {
     return this.postService.findOne(id, true);
   }
@@ -67,9 +63,9 @@ export class PostController {
     return this.postService.startActivity(userId, startActivityDto);
   }
 
-  @Get(':id/user/:userId')
+  @Get(':idPost/user/:userId')
   getActivitiesResultsByPost(
-    @Param('id') postId: string,
+    @Param('idPost') postId: string,
     @Param('userId') userId: string,
   ) {
     return this.postService.getUserActivityResultsFromUserByPost(
