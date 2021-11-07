@@ -14,9 +14,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
 import JwtAuthenticationGuard from 'src/api/authentication/jwt-authentication.guard';
 import { Classroom, Post as PostClass } from 'src/api/classroom/entities';
+import { Roles, UserTypeGuard } from 'src/api/guards';
+import { UserType } from 'src/api/users';
 import {
   MongoSerializerInterceptor,
   NotFoundInterceptor,
@@ -26,7 +27,7 @@ import { ClassroomService } from '../services';
 @UseInterceptors(new NotFoundInterceptor())
 @ApiCookieAuth()
 @ApiTags('Classroom')
-@UseGuards(JwtAuthenticationGuard)
+@UseGuards(JwtAuthenticationGuard, UserTypeGuard)
 @Controller('v1/classrooms')
 export class ClassroomController {
   constructor(private readonly classroomService: ClassroomService) {}
@@ -80,7 +81,8 @@ export class ClassroomController {
     return this.classroomService.findOne(id);
   }
 
-  @Post('join-request/:classId/:userId')
+  @Roles(UserType.C)
+  @Post(':classId/join-request/:userId')
   async joinClassroomRequest(
     @Param('classId') classId: string,
     @Param('userId') userId: string,

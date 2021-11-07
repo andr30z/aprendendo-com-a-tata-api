@@ -14,8 +14,9 @@ import { JwtRefreshTokenStrategy } from './api/authentication/jwt-refresh-token.
 import { JwtStrategy } from './api/authentication/jwt.strategy';
 import { UsersModule } from './api/users/users.module';
 import { ActivitiesModule } from './api/activities/activities.module';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ClassroomModule } from './api/classroom/classroom.module';
+import { UserTypeGuard } from './api/guards';
 const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
 
 @Module({
@@ -50,6 +51,10 @@ const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
     LocalStrategy,
     JwtStrategy,
     JwtRefreshTokenStrategy,
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: UserTypeGuard,
+    // },
   ],
   controllers: [AuthenticationController],
 })
