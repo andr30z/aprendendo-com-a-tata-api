@@ -5,14 +5,14 @@ import {
   Delete,
   Get,
   Param,
-  Post,
+  Post as PostMethod,
   Put,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import JwtAuthenticationGuard from 'src/api/authentication/jwt-authentication.guard';
-import { Post as PostClass } from 'src/api/classroom/entities/';
+import { Post } from 'src/api/classroom/entities/';
 import {
   MongoSerializerInterceptor,
   NotFoundInterceptor,
@@ -21,7 +21,6 @@ import { CreatePostDto, StartActivityDto, UpdatePostDto } from '../dto';
 import { PostService } from '../services';
 
 @UseInterceptors(new NotFoundInterceptor())
-@UseInterceptors(MongoSerializerInterceptor(PostClass))
 @ApiCookieAuth()
 @ApiTags('Post')
 @UseGuards(JwtAuthenticationGuard)
@@ -30,32 +29,37 @@ export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @UseInterceptors(CacheInterceptor)
+  @UseInterceptors(MongoSerializerInterceptor(Post))
   @Get()
   findAll() {
     return this.postService.findAll();
   }
 
   @Put(':id')
+  @UseInterceptors(MongoSerializerInterceptor(Post))
   update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
     return this.postService.update(id, updatePostDto);
   }
 
-  @Post()
+  @PostMethod()
+  @UseInterceptors(MongoSerializerInterceptor(Post))
   async create(@Body() createPostDto: CreatePostDto) {
     return await this.postService.create(createPostDto);
   }
 
   @Delete(':id')
+  @UseInterceptors(MongoSerializerInterceptor(Post))
   deleteOne(@Param('id') id: string) {
     return this.postService.deleteOne(id);
   }
 
   @Get(':id')
+  @UseInterceptors(MongoSerializerInterceptor(Post))
   findOne(@Param('id') id: string) {
-    return this.postService.findOne(id);
+    return this.postService.findOne(id, true);
   }
 
-  @Post(':id/start-activity')
+  @PostMethod(':id/start-activity')
   startActivity(
     @Param('id') userId: string,
     @Body() startActivityDto: StartActivityDto,

@@ -34,7 +34,7 @@ export class Activity {
 
   @Prop()
   avaliationMethod: AvaliationMethods;
-  
+
   @Prop()
   acceptWrongAnswers: boolean;
 

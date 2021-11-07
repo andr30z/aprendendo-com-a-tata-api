@@ -4,14 +4,15 @@ import {
   SchemaFactory,
 } from '@nestjs/mongoose';
 import { Transform, Type } from 'class-transformer';
-import { Types, Schema } from 'mongoose';
+import { Types, Schema, ObjectId, Document } from 'mongoose';
+import { User } from 'src/api/users';
 import { ActivityResult } from 'src/api/activities';
 
 export type PostActivityResultDocument = PostActivityResult & Document;
 @MongooseSchema({ timestamps: true })
 export class PostActivityResult {
   @Transform(({ obj }) => obj._id.toString())
-  _id: Types.ObjectId;
+  _id: ObjectId;
 
   @Prop({
     type: [
@@ -25,7 +26,12 @@ export class PostActivityResult {
   @Type(() => ActivityResult)
   activitiesResult: Array<Types.ObjectId>;
 
-  @Prop({ required: true })
+  @Prop({
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  })
+  @Type(() => User)
   user: Types.ObjectId;
 }
 

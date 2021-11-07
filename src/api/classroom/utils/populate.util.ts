@@ -1,6 +1,7 @@
 export const getPopulateCommentsOrPosts = () => ({
   path: 'classroom',
   model: 'Classroom',
+  select:"-classPhoto -pendingJoinRequests",
   populate: [
     {
       path: 'teacher',

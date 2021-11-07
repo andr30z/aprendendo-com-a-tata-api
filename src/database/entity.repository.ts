@@ -33,8 +33,9 @@ export abstract class EntityRepository<T extends Document> {
   async findOneOrThrow(
     entityFilterQuery: FilterQuery<T>,
     throwCallback: () => HttpException,
+    projection?: Record<string, unknown> | string,
   ) {
-    const entity = await this.findOne(entityFilterQuery);
+    const entity = await this.findOne(entityFilterQuery, projection);
     if (!entity) throw throwCallback();
     return entity;
   }
@@ -45,7 +46,7 @@ export abstract class EntityRepository<T extends Document> {
    **/
   async findOne(
     entityFilterQuery: FilterQuery<T>,
-    projection?: Record<string, unknown>,
+    projection?: Record<string, unknown> | string,
     populatePath?: string,
   ) {
     const query = this.entityModel.findOne(entityFilterQuery, projection);

@@ -1,8 +1,13 @@
 import { CacheModule, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { PostActivityResultSchema, PostActivityResult } from './types';
 import { ActivitiesModule } from '../activities/activities.module';
 import { UsersModule } from '../users';
-import { ClassroomController, PostController, CommentController } from './controllers';
+import {
+  ClassroomController,
+  PostController,
+  CommentController,
+} from './controllers';
 import {
   Classroom,
   ClassroomSchema,

@@ -1,2 +1,2 @@
 export * from './post.types';
-export * from './post-activity.type';
+export * from './post-activity-result.type';

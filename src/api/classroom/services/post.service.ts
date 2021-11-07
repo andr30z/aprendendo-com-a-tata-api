@@ -43,7 +43,8 @@ export class PostService {
     return {
       posts: await this.postRepository
         .find()
-        .populate(POPULATE_PATHS.POST)
+        .select('-postActivityResult')
+        .populate(this.populateWithoutActivityObject)
         .exec(),
     };
   }
@@ -65,11 +66,12 @@ export class PostService {
     return populateRelations(document, this.populateWithoutActivityObject);
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, hidePostActivityResult = false) {
     isValidMongoId(id);
     const post = await this.postRepository.findOneOrThrow(
       { _id: id },
       () => new NotFoundException('Post não encontrado!'),
+      hidePostActivityResult ? '-postActivityResult' : undefined,
     );
     return post.populate(this.populateWithoutActivityObject);
   }
@@ -123,8 +125,6 @@ export class PostService {
           : createPostDto.allowComments,
     });
 
-    console.log(createPostDto);
-
     return await post.populate(this.populateWithoutActivityObject);
   }
 
@@ -136,10 +136,38 @@ export class PostService {
       p.populate([
         {
           path: 'postActivityResult',
+          model: 'PostActivityResult',
           populate: [
             {
-              path: 'activityResult',
+              path: 'activitiesResult',
               model: 'ActivityResult',
+              // select: '-user',
+              populate: [
+                {
+                  path: 'activity',
+                  model: 'Activity',
+                  select: '_id name',
+                },
+                {
+                  path: 'user',
+                  model: 'User',
+                  select: '_id name',
+                },
+                {
+                  path: 'activityAnswers',
+                  model: 'ActivityAnswers',
+                  populate: [
+                    {
+                      path: 'activity',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              path: 'user',
+              model: 'User',
+              select: '-password -currentHashedRefreshToken',
             },
           ],
         },
@@ -149,17 +177,16 @@ export class PostService {
   }
 
   async getUserActivityResultsFromUserByPost(postId: string, userId: string) {
-    const user = await this.userService.getById(userId);
+    await this.userService.getById(userId);
     const post = await this.getPostWithActivityResultPopulate(postId);
-    if (!post.activities || !post.postActivityResult)
+    if (post.type !== PostTypes.A)
       throw new BadRequestException('O post informado não possui atividades!');
     const results = post.postActivityResult;
-    console.log(results);
-    const userActivities = results.filter((postActivityResult) => {
-      postActivityResult.user._id.equals(userId);
-    });
+    const userActivities = results.filter((postActivityResult) =>
+      postActivityResult.user._id.equals(userId),
+    );
     return {
-      activitiesResults: userActivities,
+      postActivityResults: userActivities,
     };
   }
 

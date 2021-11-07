@@ -12,7 +12,7 @@ export type PostDocument = Post & Document;
 
 @Schema({ timestamps: true })
 export class Post {
-  @Transform(({ obj, value }) => obj._id.toString())
+  @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;
 
   @Prop({ required: true })
@@ -50,7 +50,10 @@ export class Post {
   @Type(() => Activity)
   activities?: Array<mongoose.Types.ObjectId>;
 
-  @Prop({ required: false, type: [PostActivityResultSchema] })
+  @Prop({
+    required: false,
+    type: [PostActivityResultSchema],
+  })
   postActivityResult?: mongoose.Types.Array<PostActivityResult>;
 
   @Prop({ required: true })
