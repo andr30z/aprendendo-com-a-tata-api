@@ -66,12 +66,14 @@ export class ClassroomService {
 
   async findOne(id: string) {
     isValidMongoId(id);
-    const document = await this.classroomRepository.findOne({ _id: id });
-    if (!document)
-      throw new NotFoundException(
-        'Não foi possível encontrar uma classe com o ID informado.',
-      );
-    return populateRelations(document, POPULATE_PATHS.CLASSROOM);
+    const document = await this.classroomRepository.findOneOrThrow(
+      { _id: id },
+      () =>
+        new NotFoundException(
+          'Não foi possível encontrar uma classe com o ID informado.',
+        ),
+    );
+    return document.populate(POPULATE_PATHS.CLASSROOM);
   }
 
   async create(createClassroomDto: CreateClassroomDto) {
@@ -136,6 +138,40 @@ export class ClassroomService {
     };
   }
 
+  async acceptUserJoinRequest(
+    classroomId: string,
+    userToJoinId: string,
+    currentUser: User,
+  ) {
+    const currentUserId = currentUser._id.toString();
+    console.log(currentUser);
+    const classroom = await this.findOne(classroomId);
+    if (!classroom.teacher._id.equals(currentUserId)) {
+      throw new ForbiddenException(
+        `Apenas o professor da sala de ID: ${classroom._id.toString()} pode aprovar novos membros!`,
+      );
+    }
+    const userToJoin = await this.userService.getById(userToJoinId);
+
+    if (classroom.members.find((x) => x._id.equals(userToJoin._id.toString())))
+      throw new ConflictException('O usuário já se encontra presente na sala!');
+
+    const userJoinRequestPosition = classroom.pendingJoinRequests.findIndex(
+      (x) => x._id.equals(userToJoin._id.toString()),
+    );
+
+    if (userJoinRequestPosition === -1)
+      throw new BadRequestException(
+        'O usuário não está na lista de pedidos para se juntar a sala',
+      );
+
+    //remove new member from pending request array
+    classroom.pendingJoinRequests.splice(userJoinRequestPosition, 1);
+    classroom.members.push(userToJoin._id);
+
+    return await classroom.save();
+  }
+
   throwErrorIfUserIsInArray(
     array: Types.ObjectId[],
     userId: string,
@@ -144,18 +180,10 @@ export class ClassroomService {
     if (array.find((member) => member._id.toString() === userId))
       throw new ConflictException(msg || 'O usuário já é membro da classe.');
   }
-  async classroomInviteRequest(classroomId: string, userId: string) {
+  async classroomInviteRequest(classroomId: string, currentUser: User) {
     isValidMongoId(classroomId);
-    const user = await this.userService.getById(userId);
-    if (user.type !== UserType.C)
-      throw new BadRequestException(
-        'Para fazer parte de uma sala como membro, o usuário deve ser do tipo C',
-      );
-    const classroom = await this.classroomRepository.findOneOrThrow(
-      { _id: classroomId },
-      () => new NotFoundException('Classe não encontrada.'),
-    );
-
+    const classroom = await this.findOne(classroomId);
+    const userId = currentUser._id.toString();
     this.throwErrorIfUserIsInArray(
       classroom.pendingJoinRequests,
       userId,
@@ -164,7 +192,7 @@ export class ClassroomService {
 
     this.throwErrorIfUserIsInArray(classroom.members, userId);
 
-    classroom.pendingJoinRequests.push(user._id);
+    classroom.pendingJoinRequests.push(currentUser._id as any);
     await classroom.save();
 
     return { message: 'Pedido registrado com sucesso', success: true };

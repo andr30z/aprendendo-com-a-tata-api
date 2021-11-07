@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Exclude, Transform } from 'class-transformer';
+import { classToPlain, Exclude, Transform } from 'class-transformer';
+import { Console } from 'console';
 import { Document, ObjectId } from 'mongoose';
 import { getDefaultSchemaOption } from 'src/database';
 import { UserType } from './types/user.type';

@@ -5,9 +5,6 @@ import { ActivityAnswers } from '../types';
 
 export class UpsertActivityResultDto {
   @ApiProperty()
-  @IsMongoId({ message: 'O campo userId não é um ID válido!' })
-  userId: string;
-  @ApiProperty()
   @IsMongoId({ message: 'O campo activityId não é um ID válido!' })
   activityId: string;
   @ApiProperty()

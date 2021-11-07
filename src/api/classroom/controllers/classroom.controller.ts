@@ -16,8 +16,9 @@ import {
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import JwtAuthenticationGuard from 'src/api/authentication/jwt-authentication.guard';
 import { Classroom, Post as PostClass } from 'src/api/classroom/entities';
+import { CurrentUser } from 'src/api/decorators';
 import { Roles, UserTypeGuard } from 'src/api/guards';
-import { UserType } from 'src/api/users';
+import { UserType, User } from 'src/api/users';
 import {
   MongoSerializerInterceptor,
   NotFoundInterceptor,
@@ -82,11 +83,25 @@ export class ClassroomController {
   }
 
   @Roles(UserType.C)
+  @Post(':classId/join-request')
+  joinClassroomRequest(
+    @Param('classId') classId: string,
+    @CurrentUser() currentUser: User,
+  ) {
+    return this.classroomService.classroomInviteRequest(classId, currentUser);
+  }
+
+  @Roles(UserType.T)
   @Post(':classId/join-request/:userId')
-  async joinClassroomRequest(
+  joinClassroomRequestApprove(
     @Param('classId') classId: string,
     @Param('userId') userId: string,
+    @CurrentUser() currentUser: User,
   ) {
-    return await this.classroomService.classroomInviteRequest(classId, userId);
+    return this.classroomService.acceptUserJoinRequest(
+      classId,
+      userId,
+      currentUser,
+    );
   }
 }

@@ -36,7 +36,7 @@ export class ActivityResult {
   result: number;
 
   @Prop({ required: true, type: [ActivityAnswersSchema] })
-  activityAnswers: Types.Array<ActivityAnswers>;
+  activityAnswers: ActivityAnswers[];
 }
 
 export const ActivityResultSchema =

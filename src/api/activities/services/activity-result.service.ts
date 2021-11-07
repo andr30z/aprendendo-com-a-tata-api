@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { UsersService } from 'src/api/users';
-import { convertToMongoId, isValidMongoId } from 'src/utils';
+import { isValidMongoId } from 'src/utils';
 import { ActivitiesService } from '.';
 import { UpsertActivityResultDto } from '../dto';
 import { ActivityResultRepository } from '../repositories';
@@ -27,34 +27,41 @@ export class ActivityResultService {
     );
   }
 
-  async upsertActivityResult(
+  async updateActivityResult(
     userId: string,
     activityResultDto: UpsertActivityResultDto,
   ) {
-    const user = await this.userService.getById(userId);
+    const activityResult = await this.activityResultRepository.findOneOrThrow(
+      {
+        _id: activityResultDto.activityResultId,
+        user: userId,
+      },
+      () =>
+        new NotFoundException(
+          'Não foi possivel encontrar um resultado de atividade ',
+        ),
+    );
     const activity = await this.activitiesService.findOne(
       activityResultDto.activityId,
     );
-    let result: number;
+    let result: number = 0;
     //logic to determine result
     if (activityResultDto.finished)
       result = activityResultLogic(
         activityResultDto.activityAnswers,
         activity.avaliationMethod,
       );
-
-    return this.activityResultRepository.upsert(
+    activityResult.result = result;
+    activityResult.finished = activityResultDto.finished;
+    activityResult.activityAnswers = activityResultDto.activityAnswers;
+    return (await activityResult.save()).populate([
       {
-        _id: convertToMongoId(activityResultDto.activityResultId),
-        user: user._id,
+        path: 'activity',
+        model: 'Activity',
+        select: '_id name',
       },
-      {
-        ...activityResultDto,
-        user: userId,
-        activity: activityResultDto.activityId,
-        result: result ? result : 0,
-      },
-    );
+      'user',
+    ]);
   }
 
   async findManyById(arrayOfIds: Array<Types.ObjectId>) {

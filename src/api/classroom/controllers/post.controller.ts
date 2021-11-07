@@ -11,6 +11,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { User } from 'src/api/users';
 import JwtAuthenticationGuard from 'src/api/authentication/jwt-authentication.guard';
 import { Post } from 'src/api/classroom/entities/';
 import {
@@ -19,17 +20,19 @@ import {
 } from 'src/interceptors';
 import { CreatePostDto, StartActivityDto, UpdatePostDto } from '../dto';
 import { PostService } from '../services';
+import { ActivityResult } from 'src/api/activities';
+import { PostActivityResult } from 'src/api/classroom/types';
 
 @UseInterceptors(new NotFoundInterceptor())
 @ApiCookieAuth()
 @ApiTags('Post')
+@UseInterceptors(MongoSerializerInterceptor(Post))
 @UseGuards(JwtAuthenticationGuard)
 @Controller('v1/posts')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @UseInterceptors(CacheInterceptor)
-  @UseInterceptors(MongoSerializerInterceptor(Post))
   @Get()
   findAll() {
     return this.postService.findAll();
@@ -63,6 +66,10 @@ export class PostController {
     return this.postService.startActivity(userId, startActivityDto);
   }
 
+  @UseInterceptors(
+    MongoSerializerInterceptor(ActivityResult),
+    MongoSerializerInterceptor(PostActivityResult),
+  )
   @Get(':idPost/user/:userId')
   getActivitiesResultsByPost(
     @Param('idPost') postId: string,
