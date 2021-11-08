@@ -13,7 +13,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import JwtAuthenticationGuard from 'src/api/authentication/jwt-authentication.guard';
 import { Classroom, Post as PostClass } from 'src/api/classroom/entities';
 import { CurrentUser } from 'src/api/decorators';
@@ -34,10 +34,16 @@ export class ClassroomController {
   constructor(private readonly classroomService: ClassroomService) { }
 
   @UseInterceptors(CacheInterceptor)
+  @ApiQuery({
+    name: "code",
+    type: String,
+    description: "Classroom code. Optional.",
+    required: false
+  })
   @UseInterceptors(MongoSerializerInterceptor(Classroom))
   @Get()
-  findAll() {
-    return this.classroomService.findAll();
+  findAll(@Query('code') code?: string) {
+    return this.classroomService.findAll(code);
   }
 
   @UseInterceptors(MongoSerializerInterceptor(PostClass))

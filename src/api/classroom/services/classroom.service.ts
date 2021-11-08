@@ -24,12 +24,13 @@ export class ClassroomService {
     private readonly postRepository: PostRepository,
   ) { }
 
-  async findAll() {
+  async findAll(code?: string) {
+    const query = code ? { code: new RegExp(code, 'i') } : undefined;
     return {
       classrooms: await this.classroomRepository
-        .find()
-        .populate('teacher')
-        .populate('members')
+        .find(query)
+        .select('-pendingJoinRequests -classPhoto')
+        .populate(POPULATE_PATHS.CLASSROOM)
         .exec(),
     };
     // return { classrooms };
@@ -208,5 +209,4 @@ export class ClassroomService {
     await classroom.save();
     return { success: true, message: "Usuário removido com sucesso" }
   }
-
 }
