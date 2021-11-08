@@ -41,13 +41,19 @@ export class ClassroomController {
   }
 
   @UseInterceptors(MongoSerializerInterceptor(PostClass))
-  @Get(':id/posts')
+  @Get('posts/:id')
   findPostsByClassroom(@Param('id') classId: string) {
     return this.classroomService.getPostsByClass(classId);
   }
 
+  @Roles(UserType.T)
+  @Delete(':idClass/users/:idUser')
+  removeUser(@Param('idClass') classroomId: string, @Param('idUser') userToRemoveId: string, @CurrentUser() currentUser: User) {
+    return this.classroomService.removeUserFromClassroom(classroomId, userToRemoveId, currentUser);
+  }
+
   @UseInterceptors(MongoSerializerInterceptor(Classroom))
-  @Get('users/:id')
+  @Get('user-classrooms/:id')
   findClassesByUser(
     @Param('id') userId: string,
     @Query(
