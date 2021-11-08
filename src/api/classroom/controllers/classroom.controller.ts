@@ -31,7 +31,7 @@ import { ClassroomService } from '../services';
 @UseGuards(JwtAuthenticationGuard, UserTypeGuard)
 @Controller('v1/classrooms')
 export class ClassroomController {
-  constructor(private readonly classroomService: ClassroomService) {}
+  constructor(private readonly classroomService: ClassroomService) { }
 
   @UseInterceptors(CacheInterceptor)
   @UseInterceptors(MongoSerializerInterceptor(Classroom))
@@ -58,12 +58,14 @@ export class ClassroomController {
   ) {
     return this.classroomService.classesByUsers(userId, isTeacher);
   }
+  @Roles(UserType.T)
   @Put(':id')
   @UseInterceptors(MongoSerializerInterceptor(Classroom))
   update(@Param('id') id: string, @Body() createUserDto: CreateClassroomDto) {
     return this.classroomService.update(id, createUserDto);
   }
 
+  @Roles(UserType.T)
   @Post()
   @UseInterceptors(MongoSerializerInterceptor(Classroom))
   async create(@Body() createUserDto: CreateClassroomDto) {
@@ -71,6 +73,7 @@ export class ClassroomController {
   }
 
   @Delete(':id')
+  @Roles(UserType.T)
   @UseInterceptors(MongoSerializerInterceptor(Classroom))
   deleteOne(@Param('id') id: string) {
     return this.classroomService.deleteOne(id);
@@ -98,10 +101,25 @@ export class ClassroomController {
     @Param('userId') userId: string,
     @CurrentUser() currentUser: User,
   ) {
-    return this.classroomService.acceptUserJoinRequest(
+    return this.classroomService.acceptOrDenyUserJoinRequest(
       classId,
       userId,
       currentUser,
+    );
+  }
+
+  @Roles(UserType.T)
+  @Delete(':classId/join-request/:userId')
+  joinClassroomRequestDeny(
+    @Param('classId') classId: string,
+    @Param('userId') userId: string,
+    @CurrentUser() currentUser: User,
+  ) {
+    return this.classroomService.acceptOrDenyUserJoinRequest(
+      classId,
+      userId,
+      currentUser,
+      true
     );
   }
 }
