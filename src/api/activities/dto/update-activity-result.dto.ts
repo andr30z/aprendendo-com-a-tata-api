@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
-import { Types } from 'mongoose';
 import { ActivityAnswers } from '../types';
 
 export class UpdateActivityResultDto {
