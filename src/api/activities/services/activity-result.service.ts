@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { UsersService } from 'src/api/users';
 import { isValidMongoId } from 'src/utils';
 import { ActivitiesService } from '.';
-import { UpsertActivityResultDto } from '../dto';
+import { UpdateActivityResultDto } from '../dto';
 import { ActivityResultRepository } from '../repositories';
 import { activityResultLogic } from '../utils';
 
@@ -29,7 +29,7 @@ export class ActivityResultService {
 
   async updateActivityResult(
     userId: string,
-    activityResultDto: UpsertActivityResultDto,
+    activityResultDto: UpdateActivityResultDto,
   ) {
     const activityResult = await this.activityResultRepository.findOneOrThrow(
       {
