@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Document, Types } from 'mongoose';
 import { nanoid } from 'nanoid';
+import { Classroom } from '../entities';
 import { UsersService, UserType } from 'src/api/users';
 import { populateRelations } from 'src/database/populate-relations.util';
 import { isValidMongoId } from 'src/utils';
@@ -14,21 +15,22 @@ import { User } from '../../users';
 import { CreateClassroomDto } from '../dto/create-classroom.dto';
 import { UpdateClassroomDto } from '../dto/update-classroom.dto';
 import { ClassroomRepository, PostRepository } from '../repositories';
-import { POPULATE_PATHS } from '../utils';
+import { isClassroomTeacher, POPULATE_PATHS } from '../utils';
 @Injectable()
 export class ClassroomService {
   constructor(
     private readonly classroomRepository: ClassroomRepository,
     private readonly userService: UsersService,
     private readonly postRepository: PostRepository,
-  ) {}
+  ) { }
 
-  async findAll() {
+  async findAll(code?: string) {
+    const query = code ? { code: new RegExp(code, 'i') } : undefined;
     return {
       classrooms: await this.classroomRepository
-        .find()
-        .populate('teacher')
-        .populate('members')
+        .find(query)
+        .select('-pendingJoinRequests -classPhoto')
+        .populate(POPULATE_PATHS.CLASSROOM)
         .exec(),
     };
     // return { classrooms };
@@ -43,8 +45,7 @@ export class ClassroomService {
   ) {
     if (user?.type !== UserType.T)
       throw new ForbiddenException(
-        `Apenas usuários do tipo Professor podem ${
-          isEdit ? 'editar' : 'cadastrar'
+        `Apenas usuários do tipo Professor podem ${isEdit ? 'editar' : 'cadastrar'
         } salas.`,
       );
   }
@@ -91,7 +92,7 @@ export class ClassroomService {
     )
       throw new ConflictException(
         'Já existe uma classe vinculada a este professor com o nome ' +
-          createClassroomDto.name,
+        createClassroomDto.name,
       );
     if (!teacher) throw new NotFoundException('Professor não encontrado.');
 
@@ -139,26 +140,23 @@ export class ClassroomService {
     };
   }
 
-  async acceptUserJoinRequest(
+
+  async acceptOrDenyUserJoinRequest(
     classroomId: string,
-    userToJoinId: string,
+    userToJoinOrDeleteId: string,
     currentUser: User,
+    isDenyRequest: boolean = false
   ) {
     const currentUserId = currentUser._id.toString();
-    console.log(currentUser);
     const classroom = await this.findOne(classroomId);
-    if (!classroom.teacher._id.equals(currentUserId)) {
-      throw new ForbiddenException(
-        `Apenas o professor da sala de ID: ${classroom._id.toString()} pode aprovar novos membros!`,
-      );
-    }
-    const userToJoin = await this.userService.getById(userToJoinId);
+    isClassroomTeacher(classroom, currentUserId);
+    const userToJoinOrDelete = await this.userService.getById(userToJoinOrDeleteId);
 
-    if (classroom.members.find((x) => x._id.equals(userToJoin._id.toString())))
+    if (classroom.members.find((x) => x._id.equals(userToJoinOrDelete._id.toString())))
       throw new ConflictException('O usuário já se encontra presente na sala!');
 
     const userJoinRequestPosition = classroom.pendingJoinRequests.findIndex(
-      (x) => x._id.equals(userToJoin._id.toString()),
+      (x) => x._id.equals(userToJoinOrDelete._id.toString()),
     );
 
     if (userJoinRequestPosition === -1)
@@ -168,7 +166,8 @@ export class ClassroomService {
 
     //remove new member from pending request array
     classroom.pendingJoinRequests.splice(userJoinRequestPosition, 1);
-    classroom.members.push(userToJoin._id);
+    if (!isDenyRequest)
+      classroom.members.push(userToJoinOrDelete._id);
 
     return await classroom.save();
   }
@@ -197,5 +196,18 @@ export class ClassroomService {
     await classroom.save();
 
     return { message: 'Pedido registrado com sucesso', success: true };
+  }
+
+
+  async removeUserFromClassroom(classroomId: string, userToRemoveId: string, currentUser: User) {
+    const classroom = await this.findOne(classroomId);
+    isClassroomTeacher(classroom, currentUser._id.toString());
+    const removePosition = classroom.members.findIndex(user => user._id.equals(userToRemoveId))
+    if (removePosition === -1)
+      throw new NotFoundException("Não foi possível encontrar o usuário de ID: " + userToRemoveId + " na classe.");
+
+    classroom.members.splice(removePosition, 1)
+    await classroom.save();
+    return { success: true, message: "Usuário removido com sucesso" }
   }
 }
