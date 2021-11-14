@@ -19,6 +19,9 @@ export class Activity {
   name: string;
 
   @Prop({ required: true })
+  color: string;
+
+  @Prop({ required: true })
   activityImage: string;
 
   @Prop({ required: true })
