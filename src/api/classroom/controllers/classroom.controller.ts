@@ -47,7 +47,7 @@ export class ClassroomController {
   }
 
   @UseInterceptors(MongoSerializerInterceptor(PostClass))
-  @Get('posts/:id')
+  @Get(':id/posts')
   findPostsByClassroom(@Param('id') classId: string) {
     return this.classroomService.getPostsByClass(classId);
   }
@@ -59,7 +59,7 @@ export class ClassroomController {
   }
 
   @UseInterceptors(MongoSerializerInterceptor(Classroom))
-  @Get('user-classrooms/:id')
+  @Get('users/:id')
   findClassesByUser(
     @Param('id') userId: string,
     @Query(
