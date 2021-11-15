@@ -58,7 +58,7 @@ export class ActivityResultService {
       {
         path: 'activity',
         model: 'Activity',
-        select: '_id name',
+        select: '_id name difficulty',
       },
       'user',
     ]);

@@ -55,7 +55,7 @@ export class PostController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.postService.findOne(id, true);
+    return this.postService.findOne(id);
   }
 
   @PostMethod(':id/start-activity')

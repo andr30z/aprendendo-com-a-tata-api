@@ -37,7 +37,7 @@ export class PostService {
 
   readonly populateWithoutActivityObject = [
     ...POPULATE_PATHS.POST,
-    { path: 'activities', model: 'Activity', select: '_id' },
+    { path: 'activities', model: 'Activity', select: '_id name difficulty color' },
   ];
   async findAll() {
     return {
