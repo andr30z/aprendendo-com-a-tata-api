@@ -7,15 +7,16 @@ import {
   HttpStatus,
   Param,
   ParseBoolPipe,
-  Post,
+  Post as PostMethod,
   Put,
   Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { PostActivityResult } from 'src/api/classroom/types';
 import JwtAuthenticationGuard from 'src/api/authentication/jwt-authentication.guard';
-import { Classroom, Post as PostClass } from 'src/api/classroom/entities';
+import { Classroom, Post } from 'src/api/classroom/entities';
 import { CurrentUser } from 'src/api/decorators';
 import { Roles, UserTypeGuard } from 'src/api/guards';
 import { UserType, User } from 'src/api/users';
@@ -31,14 +32,14 @@ import { ClassroomService } from '../services';
 @UseGuards(JwtAuthenticationGuard, UserTypeGuard)
 @Controller('v1/classrooms')
 export class ClassroomController {
-  constructor(private readonly classroomService: ClassroomService) { }
+  constructor(private readonly classroomService: ClassroomService) {}
 
   @UseInterceptors(CacheInterceptor)
   @ApiQuery({
-    name: "code",
+    name: 'code',
     type: String,
-    description: "Classroom code. Optional.",
-    required: false
+    description: 'Classroom code. Optional.',
+    required: false,
   })
   @UseInterceptors(MongoSerializerInterceptor(Classroom))
   @Get()
@@ -46,7 +47,10 @@ export class ClassroomController {
     return this.classroomService.findAll(code);
   }
 
-  @UseInterceptors(MongoSerializerInterceptor(PostClass))
+  @UseInterceptors(
+    MongoSerializerInterceptor(Post),
+    MongoSerializerInterceptor(PostActivityResult),
+  )
   @Get(':id/posts')
   findPostsByClassroom(@Param('id') classId: string) {
     return this.classroomService.getPostsByClass(classId);
@@ -54,8 +58,16 @@ export class ClassroomController {
 
   @Roles(UserType.T)
   @Delete(':idClass/users/:idUser')
-  removeUser(@Param('idClass') classroomId: string, @Param('idUser') userToRemoveId: string, @CurrentUser() currentUser: User) {
-    return this.classroomService.removeUserFromClassroom(classroomId, userToRemoveId, currentUser);
+  removeUser(
+    @Param('idClass') classroomId: string,
+    @Param('idUser') userToRemoveId: string,
+    @CurrentUser() currentUser: User,
+  ) {
+    return this.classroomService.removeUserFromClassroom(
+      classroomId,
+      userToRemoveId,
+      currentUser,
+    );
   }
 
   @UseInterceptors(MongoSerializerInterceptor(Classroom))
@@ -78,7 +90,7 @@ export class ClassroomController {
   }
 
   @Roles(UserType.T)
-  @Post()
+  @PostMethod()
   @UseInterceptors(MongoSerializerInterceptor(Classroom))
   async create(@Body() createUserDto: CreateClassroomDto) {
     return await this.classroomService.create(createUserDto);
@@ -98,7 +110,7 @@ export class ClassroomController {
   }
 
   @Roles(UserType.C)
-  @Post(':classId/join-request')
+  @PostMethod(':classId/join-request')
   joinClassroomRequest(
     @Param('classId') classId: string,
     @CurrentUser() currentUser: User,
@@ -107,7 +119,7 @@ export class ClassroomController {
   }
 
   @Roles(UserType.T)
-  @Post(':classId/join-request/:userId')
+  @PostMethod(':classId/join-request/:userId')
   joinClassroomRequestApprove(
     @Param('classId') classId: string,
     @Param('userId') userId: string,
@@ -131,7 +143,7 @@ export class ClassroomController {
       classId,
       userId,
       currentUser,
-      true
+      true,
     );
   }
 }

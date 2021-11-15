@@ -59,6 +59,9 @@ export class PostController {
   }
 
   @PostMethod(':id/start-activity')
+  @UseInterceptors(
+    MongoSerializerInterceptor(ActivityResult),
+  )
   startActivity(
     @Param('id') userId: string,
     @Body() startActivityDto: StartActivityDto,
@@ -70,7 +73,7 @@ export class PostController {
     MongoSerializerInterceptor(ActivityResult),
     MongoSerializerInterceptor(PostActivityResult),
   )
-  @Get(':idPost/user/:userId')
+  @Get(':idPost/users/:userId')
   getActivitiesResultsByPost(
     @Param('idPost') postId: string,
     @Param('userId') userId: string,

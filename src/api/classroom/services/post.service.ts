@@ -243,10 +243,18 @@ export class PostService {
 
     post.postActivityResult = postActivities;
     await post.save();
-
+    await activityResult.populate([
+      {
+        path: 'activity',
+        model: 'Activity',
+        select: '_id',
+      },
+      'user',
+    ]); //populate here to avoid unecessary populations in case of errors
     return {
       success: true,
       message: 'Atividade iniciada com sucesso!',
+      activityResult,
     };
   }
 

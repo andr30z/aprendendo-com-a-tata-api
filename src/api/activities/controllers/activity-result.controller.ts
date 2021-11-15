@@ -34,7 +34,7 @@ export class ActivityResultController {
     return this.activityResultService.findAll();
   }
 
-  @Put('user/:userId')
+  @Put('users/:userId')
   updateResult(
     @Param('userId') userId: string,
     @Body() activityResultUpsertDto: UpdateActivityResultDto,

@@ -7,7 +7,17 @@ import { UserType } from './types/user.type';
 
 export type UserDocument = User & Document;
 
-@Schema(getDefaultSchemaOption())
+@Schema(
+  getDefaultSchemaOption({
+    toJSON: {
+      transform: (_, ret) => {
+        delete ret.currentHashedRefreshToken;
+        delete ret.password;
+        return classToPlain({ ...ret, _id: ret._id.toString() });
+      },
+    },
+  }),
+)
 export class User {
   @Prop({ required: true })
   name: string;
