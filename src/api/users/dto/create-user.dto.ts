@@ -1,10 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsEnum,
-  IsNotEmpty,
-  MaxLength,
-  MinLength,
+  IsInt,
+  IsNotEmpty, MaxLength,
+  Min,
+  MinLength
 } from 'class-validator';
 import { UserType } from '../types';
 
@@ -24,5 +26,12 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'O campo nome é obrigatório!' })
   name: string;
 
+  @ApiProperty()
+  profilePhoto: string;
+
+  @ApiProperty()
+  @Transform((v) => Number(v.obj.age))
+  @Min(1)
+  @IsInt({ message: "O campo age deve ser um número inteiro", })
   age: number;
 }

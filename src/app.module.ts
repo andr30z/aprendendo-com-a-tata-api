@@ -17,10 +17,14 @@ import { ActivitiesModule } from './api/activities/activities.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ClassroomModule } from './api/classroom/classroom.module';
 import { UserTypeGuard } from './api/guards';
+import { MulterModule } from '@nestjs/platform-express';
 const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
 
 @Module({
   imports: [
+    MulterModule.register({
+      dest: './uploads',
+    }),
     PassportModule,
     MongooseModule.forRoot(DATABASE_CONNECTION),
     ConfigModule.forRoot({
