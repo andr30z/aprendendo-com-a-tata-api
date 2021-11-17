@@ -1,27 +1,26 @@
 import * as Joi from '@hapi/joi';
-import { CacheInterceptor, CacheModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
+import { MulterModule } from '@nestjs/platform-express';
+import { ScheduleModule } from '@nestjs/schedule';
+import { ActivitiesModule } from './api/activities/activities.module';
 import {
-  AuthenticationController,
-  AuthenticationModule,
-  AuthenticationService,
+  AuthenticationController, AuthenticationService
 } from './api/authentication';
 import { LocalStrategy } from './api/authentication/authentication.strategy';
 import { JwtRefreshTokenStrategy } from './api/authentication/jwt-refresh-token.strategy';
 import { JwtStrategy } from './api/authentication/jwt.strategy';
-import { UsersModule } from './api/users/users.module';
-import { ActivitiesModule } from './api/activities/activities.module';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ClassroomModule } from './api/classroom/classroom.module';
-import { UserTypeGuard } from './api/guards';
-import { MulterModule } from '@nestjs/platform-express';
+import { DeleteTmpFilesTask, FilesController, FilesService } from './api/files';
+import { UsersModule } from './api/users/users.module';
 const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MulterModule.register({
       dest: './uploads',
     }),
@@ -55,11 +54,14 @@ const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
     LocalStrategy,
     JwtStrategy,
     JwtRefreshTokenStrategy,
+    FilesService,
+    AuthenticationService,
+    DeleteTmpFilesTask
     // {
     //   provide: APP_GUARD,
     //   useClass: UserTypeGuard,
     // },
   ],
-  controllers: [AuthenticationController],
+  controllers: [FilesController, AuthenticationController],
 })
 export class AppModule {}

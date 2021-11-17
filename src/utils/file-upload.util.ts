@@ -1,5 +1,6 @@
 import { BadRequestException } from "@nestjs/common";
 import { Request } from "express";
+import { diskStorage } from "multer";
 import { extname } from "path";
 
 export const imageFileFilter = (req: any, file: {
@@ -31,3 +32,13 @@ export const editFileName = (req: Request,
         .join('');
     callback(null, `${name}-${randomName}${fileExtName}`);
 };
+
+
+
+export const getFileStorageConfigs = (destinationPath = "./uploads") => ({
+    storage: diskStorage({
+        filename: editFileName,
+        destination: destinationPath,
+    }),
+    fileFilter: imageFileFilter,
+});
