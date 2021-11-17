@@ -1,13 +1,16 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Response } from 'express';
 import { COMMON_URLS } from 'src/constants';
-
+import * as fs from 'fs';
+import * as path from 'path';
 @Injectable()
 export class FilesService {
-  constructor(
+  constructor() { }
 
-  ) { }
 
+  async locateAndUpdateTmpFileLocation(path: string) {
+    
+  }
 
   async uploadFile(file: Express.Multer.File) {
     if (!file) throw new BadRequestException("Algo deu errado ao salvar o arquivo, verifique o envio!")
