@@ -1,6 +1,6 @@
 import { BadRequestException } from "@nestjs/common";
-import e, { Request } from "express";
-import { extname } from "path/posix";
+import { Request } from "express";
+import { extname } from "path";
 
 export const imageFileFilter = (req: any, file: {
     fieldname: string;
