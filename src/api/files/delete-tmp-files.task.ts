@@ -7,7 +7,7 @@ export class DeleteTmpFilesTask {
   private readonly logger = new Logger(DeleteTmpFilesTask.name);
 
   // @Cron(CronExpression.EVERY_HOUR)
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   handleCron() {
     const resolvedPath = path.resolve("./uploads/tmp");
     fs.readdir(resolvedPath, (e, files) => {
