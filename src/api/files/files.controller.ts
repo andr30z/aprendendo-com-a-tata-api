@@ -2,7 +2,7 @@ import {
   Controller,
   Get,
   Param,
-  Post, Res,
+  Post, Query, Res,
   UploadedFile, UseInterceptors
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -22,8 +22,8 @@ export class FilesController {
     return this.filesService.uploadFile(file)
   }
 
-  @Get("/:path")
-  getUploadedFile(@Param('path') path: string, @Res() res: Response) {
+  @Get()
+  getUploadedFile(@Query('path') path: string, @Res() res: Response) {
     return this.filesService.getFile(path, res);
   }
 

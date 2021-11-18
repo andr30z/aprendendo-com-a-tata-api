@@ -60,10 +60,19 @@ export function formatFileUploadResponse(path: string) {
 
 export function encryptFilePath(path: string) {
   console.log(process.env.FILE_PATH_KEY);
-  return CryptoJS.AES.encrypt(path, process.env.FILE_PATH_KEY).toString(CryptoJS.format.OpenSSL);
+  return process.env.FILE_PATH_HASH_ID + CryptoJS.enc.Base64.parse(CryptoJS.AES.encrypt(path, process.env.FILE_PATH_KEY)
+    .toString())
+    .toString(CryptoJS.enc.Hex);
 }
 
 export function decryptFilePath(hashedText: string) {
-  console.log(hashedText+"  hashed");
-  return CryptoJS.AES.decrypt(hashedText, process.env.FILE_PATH_KEY).toString(CryptoJS.enc.Utf8);
+  let path = hashedText;
+  const prefix = process.env.FILE_PATH_HASH_ID;
+  if (!path.startsWith(prefix))
+    throw new BadRequestException(hashedText + " não é uma hash de arquivos");
+  path = path.slice(prefix.length);
+  const reb64 = CryptoJS.enc.Hex.parse(path);
+  const bytes = reb64.toString(CryptoJS.enc.Base64);
+  console.log(path + " path")
+  return CryptoJS.AES.decrypt(bytes, process.env.FILE_PATH_KEY).toString(CryptoJS.enc.Utf8);
 }

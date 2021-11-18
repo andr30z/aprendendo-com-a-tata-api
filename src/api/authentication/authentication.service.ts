@@ -2,11 +2,9 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import cryptoJs from 'crypto-Js';
 import { Response } from 'express';
-import { encryptFilePath } from 'src/utils';
 import { FilesService } from '../files';
-import { CreateUserDto, UsersRepository, UsersService, User } from '../users';
+import { CreateUserDto, UsersRepository, UsersService } from '../users';
 import { LoginCredentialsWithRequest, TokenPayload } from './types';
 
 @Injectable()

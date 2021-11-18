@@ -33,6 +33,7 @@ const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
         JWT_REFRESH_TOKEN_SECRET: Joi.string().required(),
         JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
         FILE_PATH_KEY: Joi.string().required(),
+        FILE_PATH_HASH_ID: Joi.string().required()
       }),
     }),
     ConfigModule,
@@ -65,4 +66,4 @@ const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
   ],
   controllers: [FilesController, AuthenticationController],
 })
-export class AppModule {}
+export class AppModule { }

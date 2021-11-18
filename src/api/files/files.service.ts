@@ -14,7 +14,7 @@ import {
 } from 'src/utils';
 @Injectable()
 export class FilesService {
-  constructor() {}
+  constructor() { }
 
   locateAndUpdateTmpFileLocation(pathFile: string, returnFormatedPath = true) {
     if (!pathFile)
@@ -48,8 +48,9 @@ export class FilesService {
   }
 
   getFile(path: string, res: Response) {
+    console.log(path+"unhased")
     const decrypted = decryptFilePath(path);
-    console.log(decrypted +" decrypted")
+    console.log(decrypted + " decrypted")
     res.sendFile(decrypted, { root: './uploads' });
   }
 }
