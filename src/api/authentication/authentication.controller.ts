@@ -4,16 +4,12 @@ import {
   Post,
   Put,
   Req,
-  Res,
-  UploadedFile,
-  UseGuards,
+  Res, UseGuards,
   UseInterceptors
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { MongoSerializerInterceptor } from 'src/interceptors';
-import { getFileStorageConfigs } from 'src/utils';
 import { CreateUserDto, User } from '../users';
 import { AuthenticationService } from './authentication.service';
 import JwtAuthenticationGuard from './jwt-authentication.guard';
@@ -24,14 +20,10 @@ import { LoginCredentialsWithRequest } from './types';
 @UseInterceptors(MongoSerializerInterceptor(User))
 @Controller('v1/authentication')
 export class AuthenticationController {
-  constructor(private readonly authenticationService: AuthenticationService) { }
-  // https://gabrieltanner.org/blog/nestjs-file-uploading-using-multer
-  @UseInterceptors(
-    FileInterceptor('photo', getFileStorageConfigs()))
+  constructor(private readonly authenticationService: AuthenticationService) {}
   @Post('register')
-  register(@Body() createAuthenticationDto: CreateUserDto, @UploadedFile() file: Express.Multer.File) {
-
-    return this.authenticationService.register({ ...createAuthenticationDto, profilePhoto: file?.filename });
+  register(@Body() createAuthenticationDto: CreateUserDto) {
+    return this.authenticationService.register(createAuthenticationDto);
   }
 
   @UseGuards(LocalAuthenticationGuard)

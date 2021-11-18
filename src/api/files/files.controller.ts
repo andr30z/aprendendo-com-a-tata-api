@@ -2,12 +2,12 @@ import {
   Controller,
   Get,
   Param,
-  Post, Req, Res,
+  Post, Res,
   UploadedFile, UseInterceptors
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { COMMON_URLS } from 'src/constants';
 import { getFileStorageConfigs } from 'src/utils';
 import { FilesService } from './files.service';
@@ -16,9 +16,9 @@ import { FilesService } from './files.service';
 export class FilesController {
   constructor(private readonly filesService: FilesService) { }
   @UseInterceptors(
-    FileInterceptor('files', getFileStorageConfigs("./uploads/tmp")))
+    FileInterceptor('file', getFileStorageConfigs("./uploads/tmp")))
   @Post('upload')
-  register(@UploadedFile() file: Express.Multer.File) {
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
     return this.filesService.uploadFile(file)
   }
 

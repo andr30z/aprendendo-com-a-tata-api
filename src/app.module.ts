@@ -32,6 +32,7 @@ const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
         JWT_REFRESH_TOKEN_SECRET: Joi.string().required(),
         JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
+        FILE_PATH_KEY: Joi.string().required(),
       }),
     }),
     ConfigModule,
