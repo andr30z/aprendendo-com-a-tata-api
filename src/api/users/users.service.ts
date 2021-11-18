@@ -70,8 +70,16 @@ export class UsersService {
     return this.usersRepository.findOneAndUpdate({ _id: id }, updateUserDto);
   }
 
-  remove(id: string) {
-    return this.usersRepository.deleteOne({ _id: id });
+  async remove(id: string) {
+    const deletedUser = await this.usersRepository.deleteAndReturnDocument({ _id: id })
+
+    if (!deletedUser)
+      throw new NotFoundException(
+        'Não foi possivel encontrar uma classe com o ID informado!',
+      );
+
+    this.filesService.deleteFile(deletedUser.profilePhoto);
+    return deletedUser;
   }
 
   async removeRefreshToken(userId: string) {
