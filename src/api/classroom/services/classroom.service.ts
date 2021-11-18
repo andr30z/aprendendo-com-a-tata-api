@@ -16,12 +16,14 @@ import { CreateClassroomDto } from '../dto/create-classroom.dto';
 import { UpdateClassroomDto } from '../dto/update-classroom.dto';
 import { ClassroomRepository, PostRepository } from '../repositories';
 import { isClassroomTeacher, POPULATE_PATHS } from '../utils';
+import { FilesService } from 'src/api/files';
 @Injectable()
 export class ClassroomService {
   constructor(
     private readonly classroomRepository: ClassroomRepository,
     private readonly userService: UsersService,
     private readonly postRepository: PostRepository,
+    private readonly filesService: FilesService,
   ) { }
 
   async findAll(code?: string) {
@@ -53,16 +55,17 @@ export class ClassroomService {
     const user = await this.userService.getById(updateClassroomDto.teacherId);
     this.teacherVerification(user);
     delete updateClassroomDto.teacherId;
-    const document = await this.classroomRepository.findOneAndUpdate(
+    const document = await this.classroomRepository.findOneOrThrow(
       { _id: id },
-      updateClassroomDto,
-    );
-    if (!document)
-      throw new NotFoundException(
+      () => new NotFoundException(
         'Não foi possível encontrar uma classe com o ID informado!',
-      );
+      )
+    );
 
-    return populateRelations(document, POPULATE_PATHS.CLASSROOM);
+    this.filesService.verifyAndUpdatePathFile(updateClassroomDto.classPhoto,
+      document.classPhoto);
+    const updatedDocument = await this.classroomRepository.findOneAndUpdate({ _id: id }, updateClassroomDto);
+    return updatedDocument.populate(POPULATE_PATHS.CLASSROOM);
   }
 
   async findOne(id: string) {
@@ -81,7 +84,6 @@ export class ClassroomService {
     const teacher = await this.userService.getById(
       createClassroomDto.teacherId,
     );
-
     this.teacherVerification(teacher);
 
     if (
@@ -95,7 +97,7 @@ export class ClassroomService {
         createClassroomDto.name,
       );
     if (!teacher) throw new NotFoundException('Professor não encontrado.');
-
+    this.filesService.locateAndUpdateTmpFileLocation(createClassroomDto.classPhoto, false);
     return await this.classroomRepository.create({
       ...createClassroomDto,
       teacher,
@@ -114,6 +116,7 @@ export class ClassroomService {
       throw new NotFoundException(
         'Não foi possivel encontrar uma classe com o ID informado!',
       );
+    this.filesService.deleteFile(deleted.classPhoto)
     return populateRelations(deleted, POPULATE_PATHS.CLASSROOM);
   }
 

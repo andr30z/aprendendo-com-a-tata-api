@@ -54,12 +54,11 @@ export function formatFileUploadResponse(path: string) {
   return {
     path: path,
     filePreview:
-      'http://localhost:8080/api/' + COMMON_URLS.BASE_GET_FILE_URL + '/' + path,
+      'http://localhost:8080/api/' + COMMON_URLS.BASE_GET_FILE_URL + '?path=' + path,
   };
 }
 
 export function encryptFilePath(path: string) {
-  console.log(process.env.FILE_PATH_KEY);
   return process.env.FILE_PATH_HASH_ID + CryptoJS.enc.Base64.parse(CryptoJS.AES.encrypt(path, process.env.FILE_PATH_KEY)
     .toString())
     .toString(CryptoJS.enc.Hex);
@@ -69,10 +68,9 @@ export function decryptFilePath(hashedText: string) {
   let path = hashedText;
   const prefix = process.env.FILE_PATH_HASH_ID;
   if (!path.startsWith(prefix))
-    throw new BadRequestException(hashedText + " não é uma hash de arquivos");
+    throw new BadRequestException(hashedText + " não é uma string de localização de arquivo!");
   path = path.slice(prefix.length);
   const reb64 = CryptoJS.enc.Hex.parse(path);
   const bytes = reb64.toString(CryptoJS.enc.Base64);
-  console.log(path + " path")
   return CryptoJS.AES.decrypt(bytes, process.env.FILE_PATH_KEY).toString(CryptoJS.enc.Utf8);
 }

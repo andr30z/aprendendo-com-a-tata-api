@@ -22,6 +22,7 @@ import {
   CommentRepository,
 } from './repositories';
 import { ClassroomService, PostService, CommentService } from './services';
+import { FilesModule } from '../files';
 
 @Module({
   controllers: [ClassroomController, PostController, CommentController],
@@ -44,6 +45,7 @@ import { ClassroomService, PostService, CommentService } from './services';
   imports: [
     UsersModule,
     ActivitiesModule,
+    FilesModule,
     CacheModule.register(),
     MongooseModule.forFeature([
       { name: Classroom.name, schema: ClassroomSchema },

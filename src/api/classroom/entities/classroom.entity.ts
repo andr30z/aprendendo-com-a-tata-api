@@ -3,11 +3,22 @@ import { Transform, Type } from 'class-transformer';
 import * as mongoose from 'mongoose';
 import { Document, ObjectId } from 'mongoose';
 import { User } from 'src/api/users';
-import { DEFAULT_MONGOOSE_SCHEMA_OPTIONS } from 'src/database';
+import { getDefaultSchemaOption } from 'src/database';
+import { formatFileUploadResponse } from 'src/utils';
 
 export type ClassroomDocument = Classroom & Document;
 
-@Schema(DEFAULT_MONGOOSE_SCHEMA_OPTIONS)
+@Schema(getDefaultSchemaOption({
+  toJSON: {
+    transform(_, ret) {
+      return {
+        ...ret,
+        _id: ret._id.toString(),
+        classPhoto: ret.classPhoto ? formatFileUploadResponse(ret.classPhoto) : undefined
+      }
+    }
+  }
+}))
 export class Classroom {
   @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;
