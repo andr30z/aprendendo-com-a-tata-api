@@ -46,12 +46,13 @@ export class FilesService {
    * @author andr3z0 
    */
   verifyAndUpdatePathFile(newPath?: string, oldPath?: string) {
-    if (oldPath === newPath || oldPath === undefined || newPath === undefined)
+    if (oldPath === newPath || !newPath)
       return;
 
     this.locateAndUpdateTmpFileLocation(newPath);
     this.deleteFile(oldPath)
   }
+
   deleteFile(pathFile?: string) {
     if (!pathFile) return;
     const decryptedHash = decryptFilePath(pathFile);
@@ -73,6 +74,11 @@ export class FilesService {
 
   getFile(path: string, res: Response) {
     const decrypted = decryptFilePath(path);
-    res.sendFile(decrypted, { root: FILE_UPLOAD.LINKED_UPLOADS });
+    if (!decrypted) return res.status(404).json({
+      message: "O Caminho informado não foi encontrado!",
+      statusCode: 404,
+      error: "Not Found"
+    })
+    res.sendFile(decrypted, { root: FILE_UPLOAD.LINKED_UPLOADS, });
   }
 }

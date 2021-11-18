@@ -12,10 +12,12 @@ import { UsersRepository } from './users.repository';
 import * as bcrypt from 'bcrypt';
 import { LoginCredentialsWithRequest } from '../authentication/types';
 import { isValidMongoId } from 'src/utils';
+import { FilesService } from '../files';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository) {}
+  constructor(private readonly usersRepository: UsersRepository,
+    private readonly filesService: FilesService) { }
 
   async create(createUserDto: CreateUserDto) {
     const user = await this.usersRepository.findUserByEmail(
@@ -61,7 +63,10 @@ export class UsersService {
     );
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const document = await this.usersRepository.findOneOrThrow({ _id: id },
+      () => new NotFoundException('Usuário não encontrado'));
+    this.filesService.verifyAndUpdatePathFile(updateUserDto.profilePhoto, document.profilePhoto)
     return this.usersRepository.findOneAndUpdate({ _id: id }, updateUserDto);
   }
 

@@ -3,6 +3,7 @@ import { classToPlain, Exclude, Transform } from 'class-transformer';
 import { Console } from 'console';
 import { Document, ObjectId } from 'mongoose';
 import { getDefaultSchemaOption } from 'src/database';
+import { formatFileUploadResponse } from 'src/utils';
 import { UserType } from './types/user.type';
 
 export type UserDocument = User & Document;
@@ -13,7 +14,11 @@ export type UserDocument = User & Document;
       transform: (_, ret) => {
         delete ret.currentHashedRefreshToken;
         delete ret.password;
-        return classToPlain({ ...ret, _id: ret._id.toString() });
+        return classToPlain({
+          ...ret,
+          _id: ret._id.toString(),
+          profilePhoto: ret.profilePhoto ? formatFileUploadResponse(ret.profilePhoto) : undefined
+        });
       },
     },
   }),
