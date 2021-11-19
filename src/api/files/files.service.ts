@@ -14,7 +14,7 @@ import {
 } from 'src/utils';
 @Injectable()
 export class FilesService {
-  constructor() { }
+  constructor() {}
 
   verifyErrorAndThrow(e: any, pathFile: string) {
     if (e.code === 'ENOENT')
@@ -41,16 +41,17 @@ export class FilesService {
     return returnFormatedPath ? formatFileUploadResponse(pathFile) : undefined;
   }
 
-  /** 
-   * This function will delete whatever is located at ```oldPath```. 
-   * @author andr3z0 
+  /**
+   * This function will delete whatever is located at ```oldPath```.
+   * @author andr3z0
    */
   verifyAndUpdatePathFile(newPath?: string, oldPath?: string) {
-    if (oldPath === newPath || !newPath)
-      return;
+    if (oldPath === newPath || !newPath) return;
 
     this.locateAndUpdateTmpFileLocation(newPath);
-    this.deleteFile(oldPath)
+    try {
+      this.deleteFile(oldPath);
+    } catch (e) {}
   }
 
   deleteFile(pathFile?: string) {
@@ -58,9 +59,9 @@ export class FilesService {
     const decryptedHash = decryptFilePath(pathFile);
     const resolvedLinkedPath = path.resolve(FILE_UPLOAD.LINKED_UPLOADS);
     try {
-      fs.unlinkSync(resolvedLinkedPath + "/" + decryptedHash);
+      fs.unlinkSync(resolvedLinkedPath + '/' + decryptedHash);
     } catch (error) {
-      this.verifyErrorAndThrow(error, pathFile)
+      this.verifyErrorAndThrow(error, pathFile);
     }
   }
 
@@ -69,16 +70,17 @@ export class FilesService {
       throw new BadRequestException(
         'Algo deu errado ao salvar o arquivo, verifique o envio!',
       );
-    return { path: encryptFilePath(file.filename) }
+    return { path: encryptFilePath(file.filename) };
   }
 
   getFile(path: string, res: Response) {
     const decrypted = decryptFilePath(path);
-    if (!decrypted) return res.status(404).json({
-      message: "O Caminho informado não foi encontrado!",
-      statusCode: 404,
-      error: "Not Found"
-    })
-    res.sendFile(decrypted, { root: FILE_UPLOAD.LINKED_UPLOADS, });
+    if (!decrypted)
+      return res.status(404).json({
+        message: 'O Caminho informado não foi encontrado!',
+        statusCode: 404,
+        error: 'Not Found',
+      });
+    res.sendFile(decrypted, { root: FILE_UPLOAD.LINKED_UPLOADS });
   }
 }
