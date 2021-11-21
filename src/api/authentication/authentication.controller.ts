@@ -1,11 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Post,
   Put,
   Req,
-  Res, UseGuards,
-  UseInterceptors
+  Res,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -61,7 +63,7 @@ export class AuthenticationController {
   }
 
   @UseGuards(JwtAuthenticationGuard)
-  @Post('logout')
+  @Delete('logout')
   logOut(
     @Req() request: LoginCredentialsWithRequest,
     @Res() response: Response,
