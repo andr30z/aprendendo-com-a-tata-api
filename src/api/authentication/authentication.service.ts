@@ -19,7 +19,7 @@ export class AuthenticationService {
 
   async register(user: CreateUserDto) {
     const hashedPassword = await bcrypt.hash(user.password, 10);
-    this.filesService.locateAndUpdateTmpFileLocation(user.profilePhoto, false);
+    this.filesService.locateAndUpdateTmpFileLocation(user.profilePhoto, false, false);
     const createdUser = await this.usersService.create({
       ...user,
       profilePhoto: user.profilePhoto,

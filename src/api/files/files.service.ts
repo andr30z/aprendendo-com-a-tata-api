@@ -24,9 +24,18 @@ export class FilesService {
     else throw e;
   }
 
-  locateAndUpdateTmpFileLocation(pathFile: string, returnFormatedPath = true) {
-    if (!pathFile)
-      throw new BadRequestException('O caminho do arquivo é inválido.');
+  defineThrowOrReturn(throwError: boolean) {
+    if (!throwError) return;
+    throw new BadRequestException('O caminho do arquivo é inválido.');
+  }
+
+  locateAndUpdateTmpFileLocation(
+    pathFile: string,
+    returnFormatedPath = true,
+    throwErrorOnEmpty = true,
+  ) {
+    if (!pathFile) return this.defineThrowOrReturn(throwErrorOnEmpty);
+
     const decryptedHash = decryptFilePath(pathFile);
     const resolvedTmpPath = path.resolve(FILE_UPLOAD.TMP_UPLOADS);
     const resolvedLinkedPath = path.resolve(FILE_UPLOAD.LINKED_UPLOADS);
