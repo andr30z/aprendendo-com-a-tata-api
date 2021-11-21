@@ -17,7 +17,9 @@ export type UserDocument = User & Document;
         return classToPlain({
           ...ret,
           _id: ret._id.toString(),
-          profilePhoto: ret.profilePhoto ? formatFileUploadResponse(ret.profilePhoto) : undefined
+          profilePhoto: ret.profilePhoto
+            ? formatFileUploadResponse(ret.profilePhoto)
+            : undefined,
         });
       },
     },
@@ -41,7 +43,10 @@ export class User {
   password: string;
 
   @Prop()
-  age: number;
+  birthday: Date;
+
+  @Prop()
+  code: string;
 
   @Prop()
   @Exclude({ toPlainOnly: true })

@@ -1,12 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
+  IsDateString,
   IsEmail,
   IsEnum,
   IsInt,
-  IsNotEmpty, MaxLength,
+  IsNotEmpty,
+  MaxLength,
   Min,
-  MinLength
+  MinLength,
 } from 'class-validator';
 import { UserType } from '../types';
 
@@ -29,9 +31,13 @@ export class CreateUserDto {
   @ApiProperty()
   profilePhoto: string;
 
+  // @Transform((v) => Number(v.obj.age))
+  // @Min(1)
   @ApiProperty()
-  @Transform((v) => Number(v.obj.age))
-  @Min(1)
-  @IsInt({ message: "O campo age deve ser um número inteiro", })
-  age: number;
+  @IsNotEmpty({ message: 'O campo birthday é obrigatório!' })
+  @IsDateString(
+    { strict: true },
+    { message: 'O campo birthday deve ser uma data válida' },
+  )
+  birthday: Date;
 }

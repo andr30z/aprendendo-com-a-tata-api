@@ -13,18 +13,22 @@ import * as bcrypt from 'bcrypt';
 import { LoginCredentialsWithRequest } from '../authentication/types';
 import { isValidMongoId } from 'src/utils';
 import { FilesService } from '../files';
+import { nanoid } from 'nanoid';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly usersRepository: UsersRepository,
-    private readonly filesService: FilesService) { }
+  constructor(
+    private readonly usersRepository: UsersRepository,
+    private readonly filesService: FilesService,
+  ) {}
 
   async create(createUserDto: CreateUserDto) {
     const user = await this.usersRepository.findUserByEmail(
       createUserDto.email,
     );
     if (user) throw new ConflictException('Endereço de email já cadastrado!');
-    return this.usersRepository.create(createUserDto);
+
+    return this.usersRepository.create({ ...createUserDto, code: nanoid(11) });
   }
 
   async findAll() {
@@ -64,14 +68,21 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    const document = await this.usersRepository.findOneOrThrow({ _id: id },
-      () => new NotFoundException('Usuário não encontrado'));
-    this.filesService.verifyAndUpdatePathFile(updateUserDto.profilePhoto, document.profilePhoto)
+    const document = await this.usersRepository.findOneOrThrow(
+      { _id: id },
+      () => new NotFoundException('Usuário não encontrado'),
+    );
+    this.filesService.verifyAndUpdatePathFile(
+      updateUserDto.profilePhoto,
+      document.profilePhoto,
+    );
     return this.usersRepository.findOneAndUpdate({ _id: id }, updateUserDto);
   }
 
   async remove(id: string) {
-    const deletedUser = await this.usersRepository.deleteAndReturnDocument({ _id: id })
+    const deletedUser = await this.usersRepository.deleteAndReturnDocument({
+      _id: id,
+    });
 
     if (!deletedUser)
       throw new NotFoundException(
