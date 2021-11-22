@@ -36,7 +36,7 @@ export const getPopulateComments = (
 };
 
 export const POPULATE_PATHS = {
-  CLASSROOM: ['teacher', 'members'],
+  CLASSROOM: ['teacher', 'members', 'pendingJoinRequests'],
   POST: ['author', 'activities', getPopulateCommentsOrPosts()],
   COMMENT: getPopulateComments(true),
 };

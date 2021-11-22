@@ -122,7 +122,6 @@ export class ClassroomService {
 
   async getPostsByClass(classId: string) {
     isValidMongoId(classId);
-    console.log("TESTE")
     const posts = await this.postRepository.findByClass(classId);
     return {
       posts,
