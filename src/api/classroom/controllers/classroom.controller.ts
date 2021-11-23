@@ -32,7 +32,7 @@ import { ClassroomService } from '../services';
 @UseGuards(JwtAuthenticationGuard, UserTypeGuard)
 @Controller('v1/classrooms')
 export class ClassroomController {
-  constructor(private readonly classroomService: ClassroomService) {}
+  constructor(private readonly classroomService: ClassroomService) { }
 
   @UseInterceptors(CacheInterceptor)
   @ApiQuery({
@@ -67,6 +67,18 @@ export class ClassroomController {
       classroomId,
       userToRemoveId,
       currentUser,
+    );
+  }
+
+  @Roles(UserType.C)
+  @Delete(':idClass/users')
+  leaveClassroom(
+    @Param('idClass') classroomId: string,
+    @CurrentUser() currentUser: User,
+  ) {
+    return this.classroomService.leaveClassroom(
+      classroomId,
+      currentUser._id.toString(),
     );
   }
 

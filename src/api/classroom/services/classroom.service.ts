@@ -200,16 +200,26 @@ export class ClassroomService {
     return { message: 'Pedido registrado com sucesso', success: true };
   }
 
-
-  async removeUserFromClassroom(classroomId: string, userToRemoveId: string, currentUser: User) {
+  async leaveClassroom(classroomId: string, userId: string) {
     const classroom = await this.findOne(classroomId);
-    isClassroomTeacher(classroom, currentUser._id.toString());
-    const removePosition = classroom.members.findIndex(user => user._id.equals(userToRemoveId))
+    return this.executeRemoveUserFromClassOperation(classroom, userId)
+  }
+
+  async executeRemoveUserFromClassOperation(classroom: Classroom & Document<any, any, any> & {
+    _id: any;
+  }, userId: string) {
+    const removePosition = classroom.members.findIndex(user => user._id.equals(userId))
     if (removePosition === -1)
-      throw new NotFoundException("Não foi possível encontrar o usuário de ID: " + userToRemoveId + " na classe.");
+      throw new NotFoundException("Não foi possível encontrar o usuário de ID: " + userId + " na classe.");
 
     classroom.members.splice(removePosition, 1)
     await classroom.save();
     return { success: true, message: "Usuário removido com sucesso" }
+  }
+
+  async removeUserFromClassroom(classroomId: string, userToRemoveId: string, currentUser: User) {
+    const classroom = await this.findOne(classroomId);
+    isClassroomTeacher(classroom, currentUser._id.toString());
+    return this.executeRemoveUserFromClassOperation(classroom, userToRemoveId)
   }
 }
