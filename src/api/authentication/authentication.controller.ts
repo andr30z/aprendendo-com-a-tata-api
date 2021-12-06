@@ -1,12 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Post,
   Put,
   Req,
   Res,
   UseGuards,
-  UseInterceptors
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -22,7 +23,6 @@ import { LoginCredentialsWithRequest } from './types';
 @Controller('v1/authentication')
 export class AuthenticationController {
   constructor(private readonly authenticationService: AuthenticationService) {}
-
   @Post('register')
   register(@Body() createAuthenticationDto: CreateUserDto) {
     return this.authenticationService.register(createAuthenticationDto);
@@ -63,7 +63,7 @@ export class AuthenticationController {
   }
 
   @UseGuards(JwtAuthenticationGuard)
-  @Post('logout')
+  @Delete('logout')
   logOut(
     @Req() request: LoginCredentialsWithRequest,
     @Res() response: Response,

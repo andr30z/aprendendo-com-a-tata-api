@@ -1,11 +1,11 @@
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UseInterceptors } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { NotFoundInterceptor } from 'src/interceptors';
 import { UsersService } from '../users/users.service';
 import { TokenPayload } from './types';
-import { NotFoundInterceptor } from 'src/interceptors';
 
 @Injectable()
 @UseInterceptors(new NotFoundInterceptor())

@@ -1,20 +1,22 @@
 import {
   CacheInterceptor,
-  CACHE_MANAGER,
   Controller,
   Get,
-  Inject,
   Param,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
-import { Cache } from 'cache-manager';
 import JwtAuthenticationGuard from 'src/api/authentication/jwt-authentication.guard';
-import { NotFoundInterceptor } from 'src/interceptors';
+import {
+  MongoSerializerInterceptor,
+  NotFoundInterceptor,
+} from 'src/interceptors';
+import { Activity } from '../entities';
 import { ActivitiesService } from '../services';
 
 @UseInterceptors(new NotFoundInterceptor())
+@UseInterceptors(MongoSerializerInterceptor(Activity))
 @ApiCookieAuth()
 @ApiTags('Activities')
 @UseGuards(JwtAuthenticationGuard)

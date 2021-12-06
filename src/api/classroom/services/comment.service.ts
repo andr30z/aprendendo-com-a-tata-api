@@ -10,7 +10,7 @@ import {
   isFromClass,
   isPureArrayOfClass,
   isValidMongoId,
-} from 'src/Utils';
+} from 'src/utils';
 import { CreateCommentDto } from '../dto';
 import { Classroom } from '../entities';
 import { CommentRepository } from '../repositories';

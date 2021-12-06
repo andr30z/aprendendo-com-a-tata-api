@@ -1,16 +1,35 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Exclude, Transform } from 'class-transformer';
+import { classToPlain, Exclude, Transform } from 'class-transformer';
+import { Console } from 'console';
 import { Document, ObjectId } from 'mongoose';
+import { getDefaultSchemaOption } from 'src/database';
+import { formatFileUploadResponse } from 'src/utils';
 import { UserType } from './types/user.type';
 
 export type UserDocument = User & Document;
 
-@Schema({ timestamps: true })
+@Schema(
+  getDefaultSchemaOption({
+    toJSON: {
+      transform: (_, ret) => {
+        delete ret.currentHashedRefreshToken;
+        delete ret.password;
+        return classToPlain({
+          ...ret,
+          _id: ret._id.toString(),
+          profilePhoto: ret.profilePhoto
+            ? formatFileUploadResponse(ret.profilePhoto)
+            : undefined,
+        });
+      },
+    },
+  }),
+)
 export class User {
   @Prop({ required: true })
   name: string;
 
-  @Transform(({ obj, value }) => obj._id.toString())
+  @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;
 
   @Prop({ required: true })
@@ -24,7 +43,10 @@ export class User {
   password: string;
 
   @Prop()
-  age: number;
+  birthday: Date;
+
+  @Prop()
+  code: string;
 
   @Prop()
   @Exclude({ toPlainOnly: true })

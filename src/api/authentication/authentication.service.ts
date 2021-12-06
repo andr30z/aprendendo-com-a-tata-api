@@ -3,22 +3,26 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
-import { CreateUserDto, UsersRepository, UsersService, User } from '../users';
+import { FilesService } from '../files';
+import { CreateUserDto, UsersRepository, UsersService } from '../users';
 import { LoginCredentialsWithRequest, TokenPayload } from './types';
 
 @Injectable()
 export class AuthenticationService {
   constructor(
-    private usersRepository: UsersRepository,
-    private usersService: UsersService,
+    private readonly usersRepository: UsersRepository,
+    private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly filesService: FilesService,
   ) {}
 
   async register(user: CreateUserDto) {
     const hashedPassword = await bcrypt.hash(user.password, 10);
+    this.filesService.locateAndUpdateTmpFileLocation(user.profilePhoto, false, false);
     const createdUser = await this.usersService.create({
       ...user,
+      profilePhoto: user.profilePhoto,
       password: hashedPassword,
     });
     // createdUser.password = undefined;

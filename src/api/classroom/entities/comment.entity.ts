@@ -3,11 +3,12 @@ import { Transform, Type } from 'class-transformer';
 import * as mongoose from 'mongoose';
 import { Document, ObjectId } from 'mongoose';
 import { User } from 'src/api/users';
+import { DEFAULT_MONGOOSE_SCHEMA_OPTIONS } from 'src/database';
 import { Post } from './post.entity';
 
 export type CommentDocument = Comment & Document;
 
-@Schema({ timestamps: true })
+@Schema(DEFAULT_MONGOOSE_SCHEMA_OPTIONS)
 export class Comment {
   @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;
