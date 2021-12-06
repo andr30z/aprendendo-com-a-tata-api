@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { FilesModule } from '../files';
-import { User, UserSchema } from './user.entity';
-import { UsersController } from './users.controller';
-import { UsersRepository } from './users.repository';
-import { UsersService } from './users.service';
+import { FilesModule } from '../files/../files';
+import { User, UserSchema } from './entities/user.entity';
+import { UsersController } from './controllers/users.controller';
+import { UsersRepository } from './repositories/users.repository';
+import { UsersService } from './services/users.service';
 
 @Module({
   controllers: [UsersController],

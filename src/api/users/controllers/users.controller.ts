@@ -3,22 +3,19 @@ import {
   Controller,
   Delete,
   Get,
-  Param,
-  Post,
-  Put,
+  Param, Put,
   Req,
   UseGuards,
-  UseInterceptors,
+  UseInterceptors
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import { MongoSerializerInterceptor } from 'src/interceptors';
 import { NotFoundInterceptor } from 'src/interceptors/not-found.interceptor';
-import JwtAuthenticationGuard from '../authentication/jwt-authentication.guard';
-import { LoginCredentialsWithRequest } from '../authentication/types';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './user.entity';
-import { UsersService } from './users.service';
+import JwtAuthenticationGuard from '../../authentication/jwt-authentication.guard';
+import { LoginCredentialsWithRequest } from '../../authentication/types';
+import { UpdateUserDto } from '../dto/update-user.dto';
+import { User } from '../entities/user.entity';
+import { UsersService } from '../services/users.service';
 
 @UseInterceptors(new NotFoundInterceptor('Registro não encontrado!'))
 @UseInterceptors(MongoSerializerInterceptor(User))

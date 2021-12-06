@@ -6,13 +6,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { isValidObjectId } from 'mongoose';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UsersRepository } from './users.repository';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
+import { UsersRepository } from '../repositories/users.repository';
 import * as bcrypt from 'bcrypt';
-import { LoginCredentialsWithRequest } from '../authentication/types';
+import { LoginCredentialsWithRequest } from '../../authentication/types';
 import { isValidMongoId } from 'src/utils';
-import { FilesService } from '../files';
+import { FilesService } from '../../files';
 import { nanoid } from 'nanoid';
 
 @Injectable()

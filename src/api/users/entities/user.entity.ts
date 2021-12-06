@@ -4,7 +4,7 @@ import { Console } from 'console';
 import { Document, ObjectId } from 'mongoose';
 import { getDefaultSchemaOption } from 'src/database';
 import { formatFileUploadResponse } from 'src/utils';
-import { UserType } from './types/user.type';
+import { UserType } from '../types/user.type';
 
 export type UserDocument = User & Document;
 
