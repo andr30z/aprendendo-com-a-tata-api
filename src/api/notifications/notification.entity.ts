@@ -4,17 +4,25 @@ import * as mongoose from 'mongoose';
 import { Document, ObjectId } from 'mongoose';
 import { User } from 'src/api/users';
 import { DEFAULT_MONGOOSE_SCHEMA_OPTIONS } from 'src/database/utils';
-import { Post } from './post.entity';
+import { NotificationTypes } from './types';
 
-export type CommentDocument = Comment & Document;
+export type NotificationDocument = Notification & Document;
 
 @Schema(DEFAULT_MONGOOSE_SCHEMA_OPTIONS)
-export class Comment {
+export class Notification {
   @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;
 
   @Prop({ required: true })
-  content: string;
+  message: string;
+
+  @Prop({ required: true })
+  checked: boolean;
+  @Prop({ required: true, type: mongoose.Schema.Types.Mixed })
+  payload: any;
+
+  @Prop({ required: true })
+  type: NotificationTypes;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
@@ -22,15 +30,7 @@ export class Comment {
     required: true,
   })
   @Type(() => User)
-  author: mongoose.Types.ObjectId;
-
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Post',
-    required: true,
-  })
-  @Type(() => Post)
-  post: mongoose.Types.ObjectId;
+  user: mongoose.Types.ObjectId;
 }
 
-export const CommentSchema = SchemaFactory.createForClass(Comment);
+export const NotificationSchema = SchemaFactory.createForClass(Notification);
