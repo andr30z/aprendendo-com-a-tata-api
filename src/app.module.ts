@@ -16,6 +16,7 @@ import { JwtStrategy } from './api/authentication/jwt.strategy';
 import { ClassroomModule } from './api/classroom/classroom.module';
 import { DeleteTmpFilesTask, FilesController, FilesService } from './api/files';
 import { UsersModule } from './api/users/users.module';
+import { NotificationsModule } from './api/notifications/notifications.module';
 const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
 
 @Module({
@@ -50,6 +51,7 @@ const DATABASE_CONNECTION = 'mongodb://localhost/aprendendo-com-a-tata';
     UsersModule,
     ActivitiesModule,
     ClassroomModule,
+    NotificationsModule,
   ],
   providers: [
     AuthenticationService,
