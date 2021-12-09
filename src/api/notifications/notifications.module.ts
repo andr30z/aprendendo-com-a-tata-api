@@ -13,5 +13,6 @@ import { Notification, NotificationSchema } from './notification.entity';
       { name: Notification.name, schema: NotificationSchema },
     ]),
   ],
+  exports: [NotificationsService, NotificationRepository],
 })
 export class NotificationsModule {}

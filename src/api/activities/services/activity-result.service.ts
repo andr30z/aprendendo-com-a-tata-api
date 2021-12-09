@@ -64,6 +64,8 @@ export class ActivityResultService {
     ]);
   }
 
+
+
   async findManyById(arrayOfIds: Array<Types.ObjectId>) {
     const activityResults = await this.activityResultRepository.find({
       _id: { $in: arrayOfIds },

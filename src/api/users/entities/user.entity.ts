@@ -45,7 +45,7 @@ export class User {
   @Prop()
   birthday: Date;
 
-  @Prop()
+  @Prop({ required: true })
   code: string;
 
   @Prop()

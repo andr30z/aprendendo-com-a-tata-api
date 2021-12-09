@@ -10,12 +10,14 @@ import {
   UserSchema,
   UserResponsibleSchema,
 } from './entities';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   controllers: [UsersController],
   providers: [UsersService, UsersRepository, UserResponsibleRepository],
   imports: [
     FilesModule,
+    NotificationsModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: UserResponsible.name, schema: UserResponsibleSchema },
