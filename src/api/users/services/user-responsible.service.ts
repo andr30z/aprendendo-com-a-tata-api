@@ -27,30 +27,19 @@ export class UserResponsibleService {
       child: userChildId as any,
     });
     if (responsibleDocument)
-      throw new ConflictException('A criança já possui vínculo');
+      throw new ConflictException('A criança já possui vínculo!');
 
-    const populatedDoc = await responsibleDocument.populate([
-      'child',
-      'responsibleUser',
-    ]);
-    if (!populatedDoc.responsibleUser || !populatedDoc.child)
-      throw new BadRequestException('Um dos usuários do vínculo não existe!');
-    const child = populatedDoc.child;
-    const responsibleUser = populatedDoc.responsibleUser;
-    if (
-      !isFromClass<User>(child, 'name') ||
-      !isFromClass<User>(responsibleUser, 'name')
-    )
-      throw new Error('Erro ao popular relacionamentos!');
+    const childUser = await this.userService.getByCode(userChildId);
+    const responsibleUser = await this.userService.getById(userResponsibleId);
 
     if (
-      !this.userService.userIsChildren(child) ||
+      !this.userService.userIsChildren(childUser) ||
       this.userService.userIsChildren(responsibleUser)
     )
       throw new BadRequestException(
         'Os usuários não são do tipo adequado para a vinculação!',
       );
-    this.usersResponsibleRepository.create({
+    return this.usersResponsibleRepository.create({
       child: userChildId,
       responsibleUser: userChildId,
     });
