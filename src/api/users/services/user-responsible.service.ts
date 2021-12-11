@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { NotificationsService } from 'src/api/notifications';
 import { NotificationTypes } from 'src/api/notifications/types';
-import { isFromClass, isValidMongoId } from 'src/utils';
+import { convertToMongoId, isFromClass, isValidMongoId } from 'src/utils';
 import { User } from 'src/api/users';
 import { UserResponsibleRepository } from '../repositories';
 import { UsersService } from './users.service';
@@ -28,18 +28,28 @@ export class UserResponsibleService {
     );
   }
 
+  async getUserResponsibleChildrenByUserResponsibleId(userId: string) {
+    isValidMongoId(userId);
+    return {
+      children: await this.usersResponsibleRepository.find({
+        responsibleUser: userId as any,
+      }),
+    };
+  }
+
   async validateUsersBond(
     childIdentifier: string,
     responsibleId: string,
     isChildCode = false,
   ) {
-    const responsible = await (isChildCode
+    console.log(isChildCode, childIdentifier);
+    const child = await (isChildCode
       ? this.userService.getByCode(childIdentifier)
       : this.userService.getById(childIdentifier));
-    const child = await this.userService.getByCode(responsibleId);
+    const responsible = await this.userService.getById(responsibleId);
 
     if (
-      !this.userService.userIsResponsible(responsible) ||
+      !this.userService.userIsResponsible(responsible) &&
       !this.userService.userIsTeacher(responsible)
     )
       throw new BadRequestException(
@@ -114,6 +124,7 @@ export class UserResponsibleService {
         childId: child._id,
         status: UserRequestPayloadStatus.SENDED,
       },
+      checked: false,
       userId: child._id,
     });
 

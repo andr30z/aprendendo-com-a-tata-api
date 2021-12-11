@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsMongoId, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsMongoId, IsNotEmpty, IsString } from 'class-validator';
 import { NotificationTypes } from '../types';
 
 export class CreateNotificationDto {
@@ -18,4 +18,8 @@ export class CreateNotificationDto {
   @ApiProperty()
   @IsMongoId({ message: 'O campo userId não é um ID válido!' })
   userId: string;
+
+  @ApiProperty()
+  @IsBoolean({ message: 'O campo checked deve ser um booleano!' })
+  checked:boolean
 }

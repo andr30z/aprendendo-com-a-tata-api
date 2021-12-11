@@ -13,13 +13,18 @@ export class NotificationsService {
   ) {}
   create(createNotificationDto: CreateNotificationDto) {
     isValidMongoId(createNotificationDto.userId);
-    return this.notificationsRepository.create(createNotificationDto);
+    return this.notificationsRepository.create({
+      ...createNotificationDto,
+      user: createNotificationDto.userId,
+    });
   }
 
-  findAllNotificationByUserId(userId: string) {
+  async findAllNotificationByUserId(userId: string) {
     isValidMongoId(userId);
     return {
-      notifications: this.notificationsRepository.find({ user: userId }),
+      notifications: await this.notificationsRepository
+        .find({ user: userId })
+        .populate(['user']),
     };
   }
 
