@@ -45,6 +45,18 @@ export class ActivityResultController {
     );
   }
 
+  @Get('users/:userId')
+  getByUserId(@Param('userId') id: string) {
+    return this.activityResultService.findManyByUserId(id);
+  }
+
+  @Get('user-responsible/:id')
+  getByUserResponsibleId(@Param('id') id: string) {
+    return this.activityResultService.getChildActivitiesResultsByResponsibleUserId(
+      id,
+    );
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.activityResultService.findOne(id);

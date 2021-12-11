@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FilesModule } from '../files/../files';
-import { UsersController } from './controllers/users.controller';
+import { UsersController, UsersResponsibleController } from './controllers';
 import { UsersRepository, UserResponsibleRepository } from './repositories';
-import { UsersService } from './services/users.service';
+import { UsersService, UserResponsibleService } from './services';
 import {
   UserResponsible,
   User,
@@ -13,8 +13,13 @@ import {
 import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-  controllers: [UsersController],
-  providers: [UsersService, UsersRepository, UserResponsibleRepository],
+  controllers: [UsersController, UsersResponsibleController],
+  providers: [
+    UsersService,
+    UsersRepository,
+    UserResponsibleRepository,
+    UserResponsibleService,
+  ],
   imports: [
     FilesModule,
     NotificationsModule,
@@ -23,6 +28,11 @@ import { NotificationsModule } from '../notifications/notifications.module';
       { name: UserResponsible.name, schema: UserResponsibleSchema },
     ]),
   ],
-  exports: [UsersService, UsersRepository],
+  exports: [
+    UsersService,
+    UsersRepository,
+    UserResponsibleRepository,
+    UserResponsibleService,
+  ],
 })
 export class UsersModule {}

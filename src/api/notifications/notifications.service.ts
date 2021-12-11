@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { FilterQuery } from 'mongoose';
 import { isValidMongoId } from 'src/utils';
+import { NotificationDocument } from '.';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { NotificationRepository } from './notification.repository';
@@ -16,15 +18,25 @@ export class NotificationsService {
 
   findAllNotificationByUserId(userId: string) {
     isValidMongoId(userId);
-    return this.notificationsRepository.find({ user: userId });
+    return {
+      notifications: this.notificationsRepository.find({ user: userId }),
+    };
   }
 
   findAll() {
     return `This action returns all notifications`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} notification`;
+  findOneByFilter(entityFilterQuery: FilterQuery<NotificationDocument>) {
+    return this.notificationsRepository.findOne(entityFilterQuery);
+  }
+
+  findOne(notificationId: string) {
+    isValidMongoId(notificationId);
+    return this.notificationsRepository.findOneOrThrow(
+      { _id: notificationId },
+      () => new NotFoundException('Notificação não encontrada!'),
+    );
   }
 
   update(id: number, updateNotificationDto: UpdateNotificationDto) {

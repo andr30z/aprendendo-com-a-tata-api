@@ -10,6 +10,7 @@ import { isFromClass, isValidMongoId } from 'src/utils';
 import { User } from 'src/api/users';
 import { UserResponsibleRepository } from '../repositories';
 import { UsersService } from './users.service';
+import { UserRequestPayloadStatus } from '../types';
 
 @Injectable()
 export class UserResponsibleService {
@@ -19,26 +20,56 @@ export class UserResponsibleService {
     private readonly notificationService: NotificationsService,
   ) {}
 
-  async createUsersBond(userResponsibleId: string, userChildId: string) {
+  findOne(userResponsibleId: string) {
     isValidMongoId(userResponsibleId);
-    isValidMongoId(userChildId);
+    return this.usersResponsibleRepository.findOneOrThrow(
+      { _id: userResponsibleId },
+      () => new NotFoundException('Vínculo não existe!'),
+    );
+  }
 
+  async validateUsersBond(
+    childIdentifier: string,
+    responsibleId: string,
+    isChildCode = false,
+  ) {
+    const responsible = await (isChildCode
+      ? this.userService.getByCode(childIdentifier)
+      : this.userService.getById(childIdentifier));
+    const child = await this.userService.getByCode(responsibleId);
+
+    if (
+      !this.userService.userIsResponsible(responsible) ||
+      !this.userService.userIsTeacher(responsible)
+    )
+      throw new BadRequestException(
+        'O usuário responsável deve ser to tipo T ou R',
+      );
+    if (!this.userService.userIsChildren(child))
+      throw new BadRequestException('O usuário criança deve ser to tipo C');
+
+    return {
+      responsible,
+      child,
+    };
+  }
+
+  async validateIfChildHasBond(childId: string) {
     const responsibleDocument = await this.usersResponsibleRepository.findOne({
-      child: userChildId as any,
+      child: childId as any,
     });
     if (responsibleDocument)
       throw new ConflictException('A criança já possui vínculo!');
 
-    const childUser = await this.userService.getByCode(userChildId);
-    const responsibleUser = await this.userService.getById(userResponsibleId);
+    return responsibleDocument;
+  }
 
-    if (
-      !this.userService.userIsChildren(childUser) ||
-      this.userService.userIsChildren(responsibleUser)
-    )
-      throw new BadRequestException(
-        'Os usuários não são do tipo adequado para a vinculação!',
-      );
+  async createUsersBond(userResponsibleId: string, userChildId: string) {
+    isValidMongoId(userResponsibleId);
+    isValidMongoId(userChildId);
+
+    this.validateIfChildHasBond(userChildId);
+    this.validateUsersBond(userChildId, userResponsibleId);
     return this.usersResponsibleRepository.create({
       child: userChildId,
       responsibleUser: userChildId,
@@ -55,25 +86,33 @@ export class UserResponsibleService {
   }
 
   async sendUsersBondRequest(responsibleUserId: string, childCode: string) {
-    const userResponsible = await this.userService.getById(responsibleUserId);
-    const child = await this.userService.getByCode(childCode);
+    const { child, responsible } = await this.validateUsersBond(
+      childCode,
+      responsibleUserId,
+      true,
+    );
+    this.validateIfChildHasBond(child._id.toString());
+    const notification = await this.notificationService.findOneByFilter({
+      user: child._id,
+      type: NotificationTypes.USER_RESPONSIBLE_INVITE,
+      payload: {
+        userResponsible: responsibleUserId,
+        status: UserRequestPayloadStatus.SENDED,
+      },
+    });
 
-    if (
-      !this.userService.userIsResponsible(userResponsible) ||
-      !this.userService.userIsTeacher(userResponsible)
-    )
+    if (notification)
       throw new BadRequestException(
-        'O usuário responsável deve ser to tipo T ou R',
+        'O usuário já possui uma um pedido pendente para avaliar!',
       );
-    if (!this.userService.userIsChildren(child))
-      throw new BadRequestException('O usuário criança deve ser to tipo C');
 
     await this.notificationService.create({
       type: NotificationTypes.USER_RESPONSIBLE_INVITE,
-      message: `${userResponsible.name} quer ser seu responsável. Deseja aceitar?`,
+      message: `${responsible.name} quer ser seu(ua) responsável. Deseja aceitar?`,
       payload: {
-        responsableId: userResponsible._id,
+        responsableId: responsible._id,
         childId: child._id,
+        status: UserRequestPayloadStatus.SENDED,
       },
       userId: child._id,
     });
@@ -82,5 +121,29 @@ export class UserResponsibleService {
       message: 'Pedido enviado com sucesso!',
       success: true,
     };
+  }
+
+  async denyResponsibleRequest(notificationRequestId: string) {
+    const notification = await this.notificationService.findOne(
+      notificationRequestId,
+    );
+
+    if (notification.type !== NotificationTypes.USER_RESPONSIBLE_INVITE)
+      throw new BadRequestException(
+        'O tipo da notificação deve ser ' +
+          NotificationTypes.USER_RESPONSIBLE_INVITE,
+      );
+
+    if (notification.payload?.status === UserRequestPayloadStatus.ACCEPTED)
+      throw new BadRequestException(
+        'O pedido para ser responsável da criança já foi aceito!',
+      );
+
+    notification.payload = {
+      ...notification?.payload,
+      status: UserRequestPayloadStatus.REFUSED,
+    };
+
+    return notification.save();
   }
 }

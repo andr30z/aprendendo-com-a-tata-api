@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { UsersService } from 'src/api/users';
-import { isValidMongoId } from 'src/utils';
-import { ActivitiesService } from '.';
+import { UsersService, UserResponsibleService, User } from 'src/api/users';
+import { isFromClass, isValidMongoId } from 'src/utils';
+import { ActivitiesService } from './activities.service';
 import { UpdateActivityResultDto } from '../dto';
 import { ActivityResultRepository } from '../repositories';
 import { activityResultLogic } from '../utils';
@@ -13,6 +13,7 @@ export class ActivityResultService {
     private readonly activityResultRepository: ActivityResultRepository,
     private readonly activitiesService: ActivitiesService,
     private readonly userService: UsersService,
+    private readonly usersResponsibleService: UserResponsibleService,
   ) {}
   async findAll() {
     const activityResults = await this.activityResultRepository.find();
@@ -64,7 +65,28 @@ export class ActivityResultService {
     ]);
   }
 
+  async getChildActivitiesResultsByResponsibleUserId(
+    responsibleUserId: string,
+  ) {
+    const userResponsible = await this.usersResponsibleService
+      .findOne(responsibleUserId)
+      .then((responsibleDoc) =>
+        responsibleDoc.populate(['responsibleUser', 'child']),
+      );
+    if (!isFromClass<User>(userResponsible.child, 'name'))
+      throw new Error('Failed to populate child object');
 
+    return this.findManyByUserId(userResponsible.child._id.toString());
+  }
+
+
+  async findManyByUserId(userId: string) {
+    const activityResults = await this.activityResultRepository.find({
+      user: userId,
+    });
+
+    return { activityResults };
+  }
 
   async findManyById(arrayOfIds: Array<Types.ObjectId>) {
     const activityResults = await this.activityResultRepository.find({

@@ -30,7 +30,7 @@ export class UsersResponsibleController {
     );
   }
 
-  @Post("notification/:responsibleId/:childCode")
+  @Post('request/:responsibleId/:childCode')
   sendBondRequest(
     @Param('responsibleId') responsibleUserId: string,
     @Param('childCode') childCode: string,
@@ -39,6 +39,11 @@ export class UsersResponsibleController {
       responsibleUserId,
       childCode,
     );
+  }
+
+  @Delete('request/:notificationId')
+  denyBondRequest(@Param('notificationId') notificationId: string) {
+    return this.usersResponsibleService.denyResponsibleRequest(notificationId);
   }
 
   @Delete(':id')
