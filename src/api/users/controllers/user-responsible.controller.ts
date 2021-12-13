@@ -4,7 +4,7 @@ import {
   Get,
   Param,
   Post,
-  UseGuards
+  UseGuards,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
 import JwtAuthenticationGuard from '../../authentication/jwt-authentication.guard';
@@ -19,9 +19,21 @@ export class UsersResponsibleController {
     private readonly usersResponsibleService: UserResponsibleService,
   ) {}
 
-  @Get(':responsibleUserId')
+  @Get(':id')
+  getById(@Param('id') id: string) {
+    return this.usersResponsibleService.findOne(id);
+  }
+
+  @Get('child/:id')
+  getByChildId(@Param('id') childId: string) {
+    return this.usersResponsibleService.getByChildId(childId);
+  }
+
+  @Get('children/:responsibleUserId')
   getUserChildren(@Param('responsibleUserId') responsibleUserId: string) {
-    return this.usersResponsibleService.getUserResponsibleChildrenByUserResponsibleId(responsibleUserId);
+    return this.usersResponsibleService.getUserResponsibleChildrenByUserResponsibleId(
+      responsibleUserId,
+    );
   }
   @Post(':responsibleUserId/:childUserId')
   createUserResponsible(

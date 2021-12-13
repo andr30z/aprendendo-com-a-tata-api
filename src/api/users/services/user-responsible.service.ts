@@ -39,6 +39,16 @@ export class UserResponsibleService {
     };
   }
 
+  async getByChildId(childId: string) {
+    isValidMongoId(childId);
+    return this.usersResponsibleRepository
+      .findOneOrThrow(
+        { child: convertToMongoId(childId) as any },
+        () => new NotFoundException('A Criança não possui um responsável!'),
+      )
+      .then((resp) => resp.populate(['responsibleUser', 'child']));
+  }
+
   async validateUsersBond(
     childIdentifier: string,
     responsibleId: string,
