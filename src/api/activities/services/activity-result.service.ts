@@ -5,7 +5,7 @@ import { isFromClass, isValidMongoId } from 'src/utils';
 import { ActivitiesService } from './activities.service';
 import { UpdateActivityResultDto } from '../dto';
 import { ActivityResultRepository } from '../repositories';
-import { activityResultLogic } from '../utils';
+import { activityResultLogic, POPULATE_PATH_ACTIVITY_RESULT } from '../utils';
 
 @Injectable()
 export class ActivityResultService {
@@ -79,13 +79,14 @@ export class ActivityResultService {
     return this.findManyByUserId(userResponsible.child._id.toString());
   }
 
-
   async findManyByUserId(userId: string) {
-    const activityResults = await this.activityResultRepository.find({
-      user: userId,
-    });
+    const activitiesResults = await this.activityResultRepository
+      .find({
+        user: userId,
+      })
+      .populate(POPULATE_PATH_ACTIVITY_RESULT);
 
-    return { activityResults };
+    return { activitiesResults };
   }
 
   async findManyById(arrayOfIds: Array<Types.ObjectId>) {

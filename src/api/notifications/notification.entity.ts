@@ -1,14 +1,31 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Transform, Type } from 'class-transformer';
+import { classToPlain, Transform, Type } from 'class-transformer';
 import * as mongoose from 'mongoose';
 import { Document, ObjectId } from 'mongoose';
 import { User } from 'src/api/users';
-import { DEFAULT_MONGOOSE_SCHEMA_OPTIONS } from 'src/database/utils';
+import {
+  getDefaultSchemaOption
+} from 'src/database/utils';
 import { NotificationTypes } from './types';
 
 export type NotificationDocument = Notification & Document;
 
-@Schema(DEFAULT_MONGOOSE_SCHEMA_OPTIONS)
+@Schema({
+  ...getDefaultSchemaOption({
+    toJSON: {
+      transform: (_doc, ret) => {
+        const payload = {
+          ...ret?.payload,
+        };
+        if (payload?.responsibleId && payload?.childId) {
+          payload.responsibleId = payload.responsibleId.toString();
+          payload.childId = payload.childId.toString();
+        }
+        return classToPlain({ ...ret, payload, _id: ret._id.toString() });
+      },
+    },
+  }),
+})
 export class Notification {
   @Transform(({ obj }) => obj._id.toString())
   _id: ObjectId;

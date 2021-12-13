@@ -3,7 +3,7 @@ import { classToPlain, Transform } from 'class-transformer';
 import { Document, ObjectId, Schema as MongooseSchema } from 'mongoose';
 import { DEFAULT_MONGOOSE_SCHEMA_OPTIONS } from 'src/database';
 import {
-  ActivityDificultyTypes,
+  ActivityDifficultyTypes,
   ActivityTypes,
   AvaliationMethods,
 } from '../types';
@@ -54,7 +54,7 @@ export class Activity {
   type: ActivityTypes;
 
   @Prop({ required: true })
-  dificulty: ActivityDificultyTypes;
+  difficulty: ActivityDifficultyTypes;
 
   @Prop({ required: true, type: MongooseSchema.Types.Mixed })
   stages: Array<any>;

@@ -31,9 +31,11 @@ export class UserResponsibleService {
   async getUserResponsibleChildrenByUserResponsibleId(userId: string) {
     isValidMongoId(userId);
     return {
-      children: await this.usersResponsibleRepository.find({
-        responsibleUser: userId as any,
-      }),
+      children: await this.usersResponsibleRepository
+        .find({
+          responsibleUser: userId as any,
+        })
+        .populate(['responsibleUser', 'child']),
     };
   }
 
@@ -42,7 +44,6 @@ export class UserResponsibleService {
     responsibleId: string,
     isChildCode = false,
   ) {
-    console.log(isChildCode, childIdentifier);
     const child = await (isChildCode
       ? this.userService.getByCode(childIdentifier)
       : this.userService.getById(childIdentifier));
@@ -80,10 +81,30 @@ export class UserResponsibleService {
 
     this.validateIfChildHasBond(userChildId);
     this.validateUsersBond(userChildId, userResponsibleId);
-    return this.usersResponsibleRepository.create({
-      child: userChildId,
-      responsibleUser: userChildId,
+
+    const notification = await this.notificationService.findOneByFilter({
+      user: userChildId,
+      payload: {
+        responsibleId: convertToMongoId(userResponsibleId),
+        childId: convertToMongoId(userChildId),
+        status: UserRequestPayloadStatus.SENDED,
+      },
     });
+    console.log(notification);
+    if (!notification)
+      throw new BadRequestException(
+        'Para criar o vínculo, uma notificação de pedido de vinculação entre os usuários deve existir!',
+      );
+    notification.payload = {
+      ...notification.payload,
+      status: UserRequestPayloadStatus.ACCEPTED,
+    };
+    const userReponsibleDoc = await this.usersResponsibleRepository.create({
+      child: userChildId,
+      responsibleUser: userResponsibleId,
+    });
+    await notification.save();
+    return userReponsibleDoc;
   }
 
   async removeUsersBond(userResponsibleId: string) {
@@ -103,10 +124,10 @@ export class UserResponsibleService {
     );
     this.validateIfChildHasBond(child._id.toString());
     const notification = await this.notificationService.findOneByFilter({
-      user: child._id,
+      user: child._id.toString(),
       type: NotificationTypes.USER_RESPONSIBLE_INVITE,
       payload: {
-        userResponsible: responsibleUserId,
+        userResponsible: convertToMongoId(responsibleUserId),
         status: UserRequestPayloadStatus.SENDED,
       },
     });
@@ -120,7 +141,7 @@ export class UserResponsibleService {
       type: NotificationTypes.USER_RESPONSIBLE_INVITE,
       message: `${responsible.name} quer ser seu(ua) responsável. Deseja aceitar?`,
       payload: {
-        responsableId: responsible._id,
+        responsibleId: responsible._id,
         childId: child._id,
         status: UserRequestPayloadStatus.SENDED,
       },
