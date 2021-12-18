@@ -6,14 +6,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { isValidObjectId } from 'mongoose';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UsersRepository } from './users.repository';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
+import { UsersRepository } from '../repositories/users.repository';
 import * as bcrypt from 'bcrypt';
-import { LoginCredentialsWithRequest } from '../authentication/types';
+import { LoginCredentialsWithRequest } from '../../authentication/types';
 import { isValidMongoId } from 'src/utils';
-import { FilesService } from '../files';
+import { FilesService } from '../../files';
 import { nanoid } from 'nanoid';
+import { User } from '../entities';
+import { UserType } from '../types';
 
 @Injectable()
 export class UsersService {
@@ -29,6 +31,28 @@ export class UsersService {
     if (user) throw new ConflictException('Endereço de email já cadastrado!');
 
     return this.usersRepository.create({ ...createUserDto, code: nanoid(11) });
+  }
+
+  userIsChildren(user: User) {
+    return user.type === UserType.C;
+  }
+
+  userIsResponsible(user: User) {
+    return user.type === UserType.R;
+  }
+
+  userIsTeacher(user: User) {
+    return user.type === UserType.T;
+  }
+
+  getByCode(userCode: string) {
+    return this.usersRepository.findOneOrThrow(
+      { code: userCode },
+      () =>
+        new NotFoundException(
+          'Usuário não encontrado, verifique o código informado!',
+        ),
+    );
   }
 
   async findAll() {

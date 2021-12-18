@@ -9,6 +9,7 @@ import {
   ActivityResultRepository,
   ActivityResultService,
 } from 'src/api/activities';
+import { POPULATE_PATH_ACTIVITY_RESULT } from 'src/api/activities/utils';
 import { UsersService } from 'src/api/users';
 import { populateRelations } from 'src/database/populate-relations.util';
 import { convertToMongoId, isFromClass, isValidMongoId } from 'src/utils';
@@ -142,27 +143,7 @@ export class PostService {
               path: 'activitiesResult',
               model: 'ActivityResult',
               // select: '-user',
-              populate: [
-                {
-                  path: 'activity',
-                  model: 'Activity',
-                  select: '_id name',
-                },
-                {
-                  path: 'user',
-                  model: 'User',
-                  select: '_id name',
-                },
-                {
-                  path: 'activityAnswers',
-                  model: 'ActivityAnswers',
-                  populate: [
-                    {
-                      path: 'activity',
-                    },
-                  ],
-                },
-              ],
+              populate: POPULATE_PATH_ACTIVITY_RESULT,
             },
             {
               path: 'user',
