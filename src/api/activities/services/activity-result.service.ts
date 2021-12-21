@@ -50,7 +50,7 @@ export class ActivityResultService {
     if (activityResultDto.finished)
       result = activityResultLogic(
         activityResultDto.activityAnswers,
-        activity.avaliationMethod,
+        activity,
       );
     activityResult.result = result;
     activityResult.finished = activityResultDto.finished;
