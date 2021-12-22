@@ -14,6 +14,8 @@ export function activityResultLogic(
       return comparationBetweenObjects(activityAnswers, activity);
     case ActivityTypes.LCOT:
       return learningCharacteristicsOfThings(activityAnswers, activity);
+    case ActivityTypes.NMBSQ:
+      return numberSequence(activityAnswers, activity);
     default:
       return 0;
   }
@@ -25,11 +27,11 @@ function convertTo5PointsRatingNotation(score: number, totalQuestions: number) {
 
 function loopActivityAnswers(
   activityAnswers: Array<ActivityAnswers>,
-  callback: (answer: any, stageIndex: number) => void,
+  callback: (answer: any, stageIndex: number, answerIndex: number) => void,
 ) {
   activityAnswers.forEach((answer, stageIndex) => {
-    answer.activity.forEach((activity: any) => {
-      callback(activity, stageIndex);
+    answer.activity.forEach((activity: any, index: number) => {
+      callback(activity, stageIndex, index);
     });
   });
 }
@@ -83,6 +85,26 @@ export function learningCharacteristicsOfThings(
   let totalQuestions = 0;
   activity.stages.forEach((stage) => {
     totalQuestions = totalQuestions + stage.characteristicsItems.length;
+  });
+
+  return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
+}
+
+export function numberSequence(
+  activityAnswers: Array<ActivityAnswers>,
+  activity: Activity,
+) {
+  let totalCorrectAnswers = 0;
+  let totalQuestions = 0;
+  loopActivityAnswers(activityAnswers, (answer, stageIndex, answerIndex) => {
+    const currentStage = activity.stages[stageIndex];
+    console.log(answer);
+    if (typeof currentStage[answerIndex] !== 'string') return;
+    totalQuestions++;
+    if (answerIndex > 0 && currentStage[answerIndex - 1] === answer - 1)
+      return totalCorrectAnswers++;
+    if (answerIndex === 0 && currentStage[answerIndex + 1] === answer + 1)
+      totalCorrectAnswers++;
   });
 
   return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
