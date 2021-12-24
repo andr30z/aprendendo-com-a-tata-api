@@ -16,6 +16,7 @@ import { FilesService } from '../../files';
 import { nanoid } from 'nanoid';
 import { User } from '../entities';
 import { UserType } from '../types';
+import { ChangePasswordDto } from '../dto';
 
 @Injectable()
 export class UsersService {
@@ -69,6 +70,30 @@ export class UsersService {
     );
   }
 
+  async changePassword(
+    currentUser: User,
+    changePasswordDto: ChangePasswordDto,
+  ) {
+    const passwordsAreEqual = await bcrypt.compare(
+      changePasswordDto.currentPassword,
+      currentUser.password,
+    );
+    if (!passwordsAreEqual)
+      throw new BadRequestException(
+        'A senha atual informada não é igual a senha registrada!',
+      );
+    await this.usersRepository.updateOne(
+      { _id: currentUser._id },
+      {
+        password: await bcrypt.hash(changePasswordDto.newPassword, 10),
+      },
+    );
+
+    return {
+      message: 'Senha atualizada com sucesso!',
+    };
+  }
+
   async getUserIfRefreshTokenMatches(refreshToken: string, userId: string) {
     const user = await this.getById(userId);
     const doc = user.toObject();
@@ -100,7 +125,10 @@ export class UsersService {
       updateUserDto.profilePhoto,
       document.profilePhoto,
     );
-    return this.usersRepository.findOneAndUpdate({ _id: id }, updateUserDto);
+    delete updateUserDto.password;
+    return this.usersRepository.findOneAndUpdate({ _id: id }, updateUserDto, {
+      new: true,
+    });
   }
 
   async remove(id: string) {

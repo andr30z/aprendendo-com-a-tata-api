@@ -3,17 +3,20 @@ import {
   Controller,
   Delete,
   Get,
-  Param, Put,
+  Param,
+  Patch,
+  Put,
   Req,
   UseGuards,
-  UseInterceptors
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiCookieAuth, ApiTags } from '@nestjs/swagger';
+import { CurrentUser } from 'src/api/decorators';
 import { MongoSerializerInterceptor } from 'src/interceptors';
 import { NotFoundInterceptor } from 'src/interceptors/not-found.interceptor';
 import JwtAuthenticationGuard from '../../authentication/jwt-authentication.guard';
 import { LoginCredentialsWithRequest } from '../../authentication/types';
-import { UpdateUserDto } from '../dto/update-user.dto';
+import { UpdateUserDto, ChangePasswordDto } from '../dto';
 import { User } from '../entities/user.entity';
 import { UsersService } from '../services/users.service';
 
@@ -39,6 +42,14 @@ export class UsersController {
   @Get(':id')
   getById(@Param('id') id: string) {
     return this.usersService.getById(id);
+  }
+
+  @Patch('password')
+  changePassword(
+    @Body() changePasswordDto: ChangePasswordDto,
+    @CurrentUser() currentUser: User,
+  ) {
+    return this.usersService.changePassword(currentUser, changePasswordDto);
   }
 
   @Put(':id')

@@ -16,6 +16,8 @@ export function activityResultLogic(
       return learningCharacteristicsOfThings(activityAnswers, activity);
     case ActivityTypes.NMBSQ:
       return numberSequence(activityAnswers, activity);
+    case ActivityTypes.NO:
+      return numberOperation(activityAnswers, activity);
     default:
       return 0;
   }
@@ -105,6 +107,30 @@ export function numberSequence(
       return totalCorrectAnswers++;
     if (answerIndex === 0 && currentStage[answerIndex + 1] === answer + 1)
       totalCorrectAnswers++;
+  });
+
+  return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
+}
+
+function numberOperation(
+  activityAnswers: Array<ActivityAnswers>,
+  activity: Activity,
+) {
+  let totalCorrectAnswers = 0;
+  let totalQuestions = 0;
+  loopActivityAnswers(activityAnswers, (answer, stageIndex, answerIndex) => {
+    const currentStage = activity.stages[stageIndex];
+    console.log(answer);
+    const operation = currentStage.operations.find(
+      (x: any) => x._id.toString() === answer.operationId,
+    );
+    // operationId: string;
+    // result?: number;
+    if (operation.result === answer.result) totalCorrectAnswers++;
+  });
+
+  activity.stages.forEach((stage) => {
+    totalQuestions = totalQuestions + stage.operations.length;
   });
 
   return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
