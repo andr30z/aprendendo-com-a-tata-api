@@ -67,6 +67,9 @@ export class Activity {
 
   @Prop({ required: true })
   tags: Array<String>;
+
+  @Prop({ required: false })
+  story?: any;
 }
 
 export const ActivitySchema = SchemaFactory.createForClass(Activity);

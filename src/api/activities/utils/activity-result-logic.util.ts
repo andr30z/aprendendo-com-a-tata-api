@@ -14,10 +14,14 @@ export function activityResultLogic(
       return comparationBetweenObjects(activityAnswers, activity);
     case ActivityTypes.LCOT:
       return learningCharacteristicsOfThings(activityAnswers, activity);
-    case ActivityTypes.NMBSQ:
+    case ActivityTypes.NS:
       return numberSequence(activityAnswers, activity);
     case ActivityTypes.NO:
       return numberOperation(activityAnswers, activity);
+    case ActivityTypes.ST:
+      return storytelling(activityAnswers, activity);
+    case ActivityTypes.LLDCW:
+      return dragLettersToCompleteWords(activityAnswers, activity);
     default:
       return 0;
   }
@@ -133,5 +137,42 @@ function numberOperation(
     totalQuestions = totalQuestions + stage.operations.length;
   });
 
+  return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
+}
+
+function storytelling(
+  activityAnswers: Array<ActivityAnswers>,
+  activity: Activity,
+) {
+  let totalCorrectAnswers = 0;
+  let totalQuestions = activity.story.questions.length;
+  loopActivityAnswers(activityAnswers, (answer, questionIndex, _) => {
+    const question = activity.story[questionIndex];
+    const userSelectedOption = question?.options?.find(
+      (opt: any) => opt._id.toString() === answer.answerId,
+    );
+    if (userSelectedOption?.isCorrect) totalCorrectAnswers++;
+  });
+  return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
+}
+
+export function dragLettersToCompleteWords(
+  activityAnswers: Array<ActivityAnswers>,
+  activity: Activity,
+) {
+  let totalCorrectAnswers = 0;
+  let totalQuestions = 0;
+  loopActivityAnswers(activityAnswers, (answer, stageIndex, answerIndex) => {
+    const currentStage = activity.stages[stageIndex];
+    console.log(answer);
+    const word = currentStage.wordsToComplete[answerIndex];
+    // operationId: string;
+    // result?: number;
+    if (word.finishedWord === answer) totalCorrectAnswers++;
+  });
+
+  activity.stages.forEach((stage) => {
+    totalQuestions = totalQuestions + stage.wordsToComplete.length;
+  });
   return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
 }
