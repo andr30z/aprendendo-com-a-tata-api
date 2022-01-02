@@ -68,7 +68,7 @@ export class Activity {
   @Prop({ required: true })
   tags: Array<String>;
 
-  @Prop({ required: false })
+  @Prop({ required: false, type: MongooseSchema.Types.Mixed })
   story?: any;
 }
 

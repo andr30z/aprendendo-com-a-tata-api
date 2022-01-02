@@ -1,9 +1,6 @@
+import { BadRequestException } from '@nestjs/common';
 import { Activity } from '../entities';
 import { ActivityAnswers, ActivityTypes, AvaliationMethods } from '../types';
-
-function countingAnswers(activityAnswers: Array<ActivityAnswers>) {
-  return activityAnswers;
-}
 
 export function activityResultLogic(
   activityAnswers: Array<ActivityAnswers>,
@@ -12,6 +9,8 @@ export function activityResultLogic(
   switch (activity.type) {
     case ActivityTypes.CMP:
       return comparationBetweenObjects(activityAnswers, activity);
+    case ActivityTypes.SC:
+      return shapesAndColors(activityAnswers, activity);
     case ActivityTypes.LCOT:
       return learningCharacteristicsOfThings(activityAnswers, activity);
     case ActivityTypes.NS:
@@ -22,6 +21,10 @@ export function activityResultLogic(
       return storytelling(activityAnswers, activity);
     case ActivityTypes.LLDCW:
       return dragLettersToCompleteWords(activityAnswers, activity);
+    case ActivityTypes.LLCW:
+      return dragLettersToCompleteWords(activityAnswers, activity, true);
+    case ActivityTypes.LLI:
+      return imagesByLetters(activityAnswers, activity);
     default:
       return 0;
   }
@@ -159,6 +162,7 @@ function storytelling(
 export function dragLettersToCompleteWords(
   activityAnswers: Array<ActivityAnswers>,
   activity: Activity,
+  isLLCW = false,
 ) {
   let totalCorrectAnswers = 0;
   let totalQuestions = 0;
@@ -168,11 +172,93 @@ export function dragLettersToCompleteWords(
     const word = currentStage.wordsToComplete[answerIndex];
     // operationId: string;
     // result?: number;
-    if (word.finishedWord === answer) totalCorrectAnswers++;
+    if (!isLLCW && word.finishedWord === answer) return totalCorrectAnswers++;
+    if (isLLCW && answer[word.wordToComplete.indexOf('*')] === word.keyLetter)
+      totalCorrectAnswers++;
   });
 
   activity.stages.forEach((stage) => {
     totalQuestions = totalQuestions + stage.wordsToComplete.length;
   });
   return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
+}
+
+export function imagesByLetters(
+  activityAnswers: Array<ActivityAnswers>,
+  activity: Activity,
+) {
+  let totalCorrectAnswers = 0;
+  let totalQuestions = 0;
+  loopActivityAnswers(activityAnswers, (answer, stageIndex) => {
+    const currentStage = activity.stages[stageIndex];
+    console.log(answer);
+    answer.forEach((pressedContainer: any) => {
+      const lettersItem = currentStage.pressingLettersActivity.find(
+        (stageLetters: any) =>
+          pressedContainer.imagesContainerId === stageLetters._id.toString(),
+      );
+      if (!lettersItem)
+        throw new BadRequestException('Container de imagens não encontrado!');
+
+      const correctAnswers: [] = lettersItem.images.filter((x: any) =>
+        pressedContainer.pressed.includes(x._id.toString()),
+      );
+
+      totalCorrectAnswers += correctAnswers.length;
+    });
+    activity.stages.forEach((stage) => {
+      stage.pressingLettersActivity.forEach((imagesContainer: any) => {
+        totalQuestions += imagesContainer.images.filter(
+          (x: any) => x.imageStartWithInitialLetter,
+        ).length;
+      });
+    });
+    return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
+  });
+}
+
+export function shapesAndColors(
+  activityAnswers: Array<ActivityAnswers>,
+  activity: Activity,
+) {
+  let totalCorrectAnswers = 0;
+  let totalQuestions = 0;
+  loopActivityAnswers(activityAnswers, (answer, stageIndex) => {
+    const currentStage = activity.stages[stageIndex];
+    console.log(answer);
+    answer.forEach((item: any) => {
+      const headItem = findById(currentStage.columns, item.columnHeadId);
+      if (!headItem)
+        throw new BadRequestException(
+          'Header não encontrado! ID: ' + item.columnHeadId,
+        );
+
+      const receiverItem = findById(currentStage.columns, item.receiverId);
+      if (!receiverItem)
+        throw new BadRequestException(
+          'Receiver não encontrado! ID: ' + item.columnHeadId,
+        );
+
+      if (receiverItem.isItemReceiver && headItem.isHeadImage)
+        totalCorrectAnswers++;
+    });
+
+    activity.stages.forEach((stage) => {
+      stage.columns.forEach((imagesContainer: any) => {
+        totalQuestions += imagesContainer.filter(
+          (x: any) => x.isItemReceiver,
+        ).length;
+      });
+    });
+
+    return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
+  });
+}
+
+function findById(array: any[], id: string) {
+  for (let p of array) {
+    for (let i of p) {
+      if (i._id === id) return i;
+    }
+  }
 }
