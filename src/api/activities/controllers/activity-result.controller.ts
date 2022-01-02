@@ -13,7 +13,7 @@ import { ApiCookieAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from 'src/api/users';
 import JwtAuthenticationGuard from 'src/api/authentication/jwt-authentication.guard';
 import { MongoSerializerInterceptor } from 'src/interceptors';
-import { UpdateActivityResultDto } from '../dto';
+import { UpdateActivityResultDto, FinishActivityResultDto } from '../dto';
 import { ActivityResult } from '../entities';
 import { ActivityResultService } from '../services';
 
@@ -45,6 +45,16 @@ export class ActivityResultController {
     );
   }
 
+  @Post('users/:userId')
+  finishActivity(
+    @Param('userId') userId: string,
+    @Body() finishActivityResultDto: FinishActivityResultDto,
+  ) {
+    return this.activityResultService.finishActivity(
+      userId,
+      finishActivityResultDto,
+    );
+  }
   @Get('users/:userId')
   getByUserId(@Param('userId') id: string) {
     return this.activityResultService.findManyByUserId(id);

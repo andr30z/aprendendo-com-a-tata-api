@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { UsersService, UserResponsibleService, User } from 'src/api/users';
 import { isFromClass, isValidMongoId } from 'src/utils';
 import { ActivitiesService } from './activities.service';
-import { UpdateActivityResultDto } from '../dto';
+import { UpdateActivityResultDto, FinishActivityResultDto } from '../dto';
 import { ActivityResultRepository } from '../repositories';
 import { activityResultLogic, POPULATE_PATH_ACTIVITY_RESULT } from '../utils';
 
@@ -28,6 +28,28 @@ export class ActivityResultService {
     );
   }
 
+  async finishActivity(
+    userId: string,
+    finishActivityResultDto: FinishActivityResultDto,
+  ) {
+    this.userService.getById(userId);
+    const activity = await this.activitiesService.findOne(
+      finishActivityResultDto.activityId,
+    );
+    const result = activityResultLogic(
+      finishActivityResultDto.activityAnswers,
+      activity,
+    );
+
+    return await this.activityResultRepository.create({
+      user: userId,
+      finished: true,
+      activity: activity._id,
+      result,
+      activityAnswers: finishActivityResultDto.activityAnswers,
+    });
+  }
+
   async updateActivityResult(
     userId: string,
     activityResultDto: UpdateActivityResultDto,
@@ -46,12 +68,9 @@ export class ActivityResultService {
       activityResultDto.activityId,
     );
     let result: number = 0;
-    //logic to determine result
+    //logic to get activity result
     if (activityResultDto.finished)
-      result = activityResultLogic(
-        activityResultDto.activityAnswers,
-        activity,
-      );
+      result = activityResultLogic(activityResultDto.activityAnswers, activity);
     activityResult.result = result;
     activityResult.finished = activityResultDto.finished;
     activityResult.activityAnswers = activityResultDto.activityAnswers;

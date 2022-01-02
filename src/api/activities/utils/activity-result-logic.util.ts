@@ -213,8 +213,8 @@ export function imagesByLetters(
         ).length;
       });
     });
-    return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
   });
+  return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
 }
 
 export function shapesAndColors(
@@ -251,8 +251,8 @@ export function shapesAndColors(
       });
     });
 
-    return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
   });
+  return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
 }
 
 function findById(array: any[], id: string) {
