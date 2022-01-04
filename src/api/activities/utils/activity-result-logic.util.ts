@@ -31,7 +31,7 @@ export function activityResultLogic(
 }
 
 function convertTo5PointsRatingNotation(score: number, totalQuestions: number) {
-  return Math.floor((score / totalQuestions) * 5);
+  return Math.round((score / totalQuestions) * 5);
 }
 
 function loopActivityAnswers(
@@ -70,7 +70,7 @@ function comparationBetweenObjects(
 
   let totalQuestions = 0;
   activity.stages.forEach((stage) => {
-    totalQuestions = totalQuestions + stage.length;
+    totalQuestions = totalQuestions + stage.length / 2;
   });
 
   return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
@@ -107,14 +107,19 @@ export function numberSequence(
   let totalQuestions = 0;
   loopActivityAnswers(activityAnswers, (answer, stageIndex, answerIndex) => {
     const currentStage = activity.stages[stageIndex];
-    console.log(answer);
-    if (typeof currentStage[answerIndex] !== 'string') return;
+    console.log(
+      answer,
+      currentStage[answerIndex],
+      typeof currentStage[answerIndex] !== 'string',
+    );
+    if (typeof currentStage.sequence[answerIndex] !== 'string') return;
     totalQuestions++;
-    if (answerIndex > 0 && currentStage[answerIndex - 1] === answer - 1)
+    if (answerIndex > 0 && currentStage.sequence[answerIndex - 1] === answer - 1)
       return totalCorrectAnswers++;
-    if (answerIndex === 0 && currentStage[answerIndex + 1] === answer + 1)
+    if (answerIndex === 0 && currentStage.sequence[answerIndex + 1] === answer + 1)
       totalCorrectAnswers++;
   });
+  console.log(totalCorrectAnswers, totalQuestions);
 
   return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
 }
@@ -149,8 +154,8 @@ function storytelling(
 ) {
   let totalCorrectAnswers = 0;
   let totalQuestions = activity.story.questions.length;
-  loopActivityAnswers(activityAnswers, (answer, questionIndex, _) => {
-    const question = activity.story[questionIndex];
+  loopActivityAnswers(activityAnswers, (answer, _, questionIndex) => {
+    const question = activity.story.questions[questionIndex];
     const userSelectedOption = question?.options?.find(
       (opt: any) => opt._id.toString() === answer.answerId,
     );
@@ -223,34 +228,30 @@ export function shapesAndColors(
 ) {
   let totalCorrectAnswers = 0;
   let totalQuestions = 0;
-  loopActivityAnswers(activityAnswers, (answer, stageIndex) => {
+  loopActivityAnswers(activityAnswers, (item, stageIndex) => {
     const currentStage = activity.stages[stageIndex];
-    console.log(answer);
-    answer.forEach((item: any) => {
-      const headItem = findById(currentStage.columns, item.columnHeadId);
-      if (!headItem)
-        throw new BadRequestException(
-          'Header não encontrado! ID: ' + item.columnHeadId,
-        );
+    console.log(item, currentStage);
+    const headItem = findById(currentStage.columns, item.columnHeadId);
+    if (!headItem)
+      throw new BadRequestException(
+        'Header não encontrado! ID: ' + item.columnHeadId,
+      );
 
-      const receiverItem = findById(currentStage.columns, item.receiverId);
-      if (!receiverItem)
-        throw new BadRequestException(
-          'Receiver não encontrado! ID: ' + item.columnHeadId,
-        );
+    const receiverItem = findById(currentStage.columns, item.receiverId);
+    if (!receiverItem)
+      throw new BadRequestException(
+        'Receiver não encontrado! ID: ' + item.columnHeadId,
+      );
 
-      if (receiverItem.isItemReceiver && headItem.isHeadImage)
-        totalCorrectAnswers++;
+    if (receiverItem.isItemReceiver && headItem.isHeadImage)
+      totalCorrectAnswers++;
+  });
+  activity.stages.forEach((stage) => {
+    stage.columns.forEach((imagesContainer: any) => {
+      totalQuestions += imagesContainer.filter(
+        (x: any) => x.isItemReceiver,
+      ).length;
     });
-
-    activity.stages.forEach((stage) => {
-      stage.columns.forEach((imagesContainer: any) => {
-        totalQuestions += imagesContainer.filter(
-          (x: any) => x.isItemReceiver,
-        ).length;
-      });
-    });
-
   });
   return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
 }
@@ -258,7 +259,7 @@ export function shapesAndColors(
 function findById(array: any[], id: string) {
   for (let p of array) {
     for (let i of p) {
-      if (i._id === id) return i;
+      if (i._id.toString() === id) return i;
     }
   }
 }
