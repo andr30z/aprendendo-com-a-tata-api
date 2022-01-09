@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import { MongoSerializerInterceptor } from 'src/interceptors';
 import { UpdateActivityResultDto, FinishActivityResultDto } from '../dto';
 import { ActivityResult } from '../entities';
 import { ActivityResultService } from '../services';
+import { PaginationParams } from 'src/database/pagination-params';
 
 @UseInterceptors(MongoSerializerInterceptor(ActivityResult))
 @ApiCookieAuth()
@@ -56,14 +58,21 @@ export class ActivityResultController {
     );
   }
   @Get('users/:userId')
-  getByUserId(@Param('userId') id: string) {
-    return this.activityResultService.findManyByUserId(id);
+  getByUserId(
+    @Param('userId') id: string,
+    @Query() pagination: PaginationParams,
+  ) {
+    return this.activityResultService.findManyByUserId(id, pagination);
   }
 
   @Get('user-responsible/:id')
-  getByUserResponsibleId(@Param('id') id: string) {
+  getByUserResponsibleId(
+    @Param('id') id: string,
+    @Query() pagination: PaginationParams,
+  ) {
     return this.activityResultService.getChildActivitiesResultsByResponsibleUserId(
       id,
+      pagination,
     );
   }
 

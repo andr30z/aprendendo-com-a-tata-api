@@ -6,6 +6,7 @@ import { ActivitiesService } from './activities.service';
 import { UpdateActivityResultDto, FinishActivityResultDto } from '../dto';
 import { ActivityResultRepository } from '../repositories';
 import { activityResultLogic, POPULATE_PATH_ACTIVITY_RESULT } from '../utils';
+import { PaginationParams } from 'src/database/pagination-params';
 
 @Injectable()
 export class ActivityResultService {
@@ -86,6 +87,7 @@ export class ActivityResultService {
 
   async getChildActivitiesResultsByResponsibleUserId(
     responsibleUserId: string,
+    pagination: PaginationParams,
   ) {
     const userResponsible = await this.usersResponsibleService
       .findOne(responsibleUserId)
@@ -95,17 +97,25 @@ export class ActivityResultService {
     if (!isFromClass<User>(userResponsible.child, 'name'))
       throw new Error('Failed to populate child object');
 
-    return this.findManyByUserId(userResponsible.child._id.toString());
+    return this.findManyByUserId(
+      userResponsible.child._id.toString(),
+      pagination,
+    );
   }
 
-  async findManyByUserId(userId: string) {
-    const activitiesResults = await this.activityResultRepository
-      .find({
+  async findManyByUserId(
+    userId: string,
+    { page, limit, sort }: PaginationParams,
+  ) {
+    const result = await this.activityResultRepository.paginate(
+      {
         user: userId,
-      })
-      .populate(POPULATE_PATH_ACTIVITY_RESULT);
+      },
+      { page, limit, sort },
+      POPULATE_PATH_ACTIVITY_RESULT,
+    );
 
-    return { activitiesResults };
+    return result;
   }
 
   async findManyById(arrayOfIds: Array<Types.ObjectId>) {
