@@ -48,7 +48,7 @@ function loopActivityAnswers(
 /**
  * 61a2d1ede89cdada512d0faa
  * Calculates user activity result for comparation between objects activity.
- * @author andr3z0
+ * @author andr30z
  **/
 function comparationBetweenObjects(
   activityAnswers: Array<ActivityAnswers>,
