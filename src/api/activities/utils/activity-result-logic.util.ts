@@ -93,7 +93,9 @@ export function learningCharacteristicsOfThings(
   });
   let totalQuestions = 0;
   activity.stages.forEach((stage) => {
-    totalQuestions = totalQuestions + stage.characteristicsItems.length;
+    totalQuestions += stage.characteristicsItems.filter(
+      (x: any) => x.imageIsCharacteristic,
+    ).length;
   });
 
   return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
@@ -114,9 +116,15 @@ export function numberSequence(
     );
     if (typeof currentStage.sequence[answerIndex] !== 'string') return;
     totalQuestions++;
-    if (answerIndex > 0 && currentStage.sequence[answerIndex - 1] === answer - 1)
+    if (
+      answerIndex > 0 &&
+      currentStage.sequence[answerIndex - 1] === answer - 1
+    )
       return totalCorrectAnswers++;
-    if (answerIndex === 0 && currentStage.sequence[answerIndex + 1] === answer + 1)
+    if (
+      answerIndex === 0 &&
+      currentStage.sequence[answerIndex + 1] === answer + 1
+    )
       totalCorrectAnswers++;
   });
   console.log(totalCorrectAnswers, totalQuestions);
@@ -196,27 +204,24 @@ export function imagesByLetters(
   let totalQuestions = 0;
   loopActivityAnswers(activityAnswers, (answer, stageIndex) => {
     const currentStage = activity.stages[stageIndex];
-    console.log(answer);
-    answer.forEach((pressedContainer: any) => {
-      const lettersItem = currentStage.pressingLettersActivity.find(
-        (stageLetters: any) =>
-          pressedContainer.imagesContainerId === stageLetters._id.toString(),
-      );
-      if (!lettersItem)
-        throw new BadRequestException('Container de imagens não encontrado!');
+    const pressedContainer = answer;
+    const lettersItem = currentStage.pressingLettersActivity.find(
+      (stageLetters: any) =>
+        pressedContainer.imagesContainerId === stageLetters._id.toString(),
+    );
+    if (!lettersItem)
+      throw new BadRequestException('Container de imagens não encontrado!');
 
-      const correctAnswers: [] = lettersItem.images.filter((x: any) =>
-        pressedContainer.pressed.includes(x._id.toString()),
-      );
-
-      totalCorrectAnswers += correctAnswers.length;
-    });
-    activity.stages.forEach((stage) => {
-      stage.pressingLettersActivity.forEach((imagesContainer: any) => {
-        totalQuestions += imagesContainer.images.filter(
-          (x: any) => x.imageStartWithInitialLetter,
-        ).length;
-      });
+    const correctAnswers: [] = lettersItem.images.filter((x: any) =>
+      pressedContainer.pressed.includes(x._id.toString()),
+    );
+    totalCorrectAnswers += correctAnswers.length;
+  });
+  activity.stages.forEach((stage) => {
+    stage.pressingLettersActivity.forEach((imagesContainer: any) => {
+      totalQuestions += imagesContainer.images.filter(
+        (x: any) => x.imageStartWithInitialLetter === true,
+      ).length;
     });
   });
   return convertTo5PointsRatingNotation(totalCorrectAnswers, totalQuestions);
