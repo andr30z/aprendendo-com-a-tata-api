@@ -5,7 +5,6 @@ import { User } from 'src/api/users';
 import { DEFAULT_MONGOOSE_SCHEMA_OPTIONS } from 'src/database';
 import { ActivityAnswers, ActivityAnswersSchema } from '../types';
 import { Activity } from './activity.entity';
-
 export type ActivityResultDocument = ActivityResult & Document;
 
 @Schema(DEFAULT_MONGOOSE_SCHEMA_OPTIONS)
@@ -41,3 +40,4 @@ export class ActivityResult {
 
 export const ActivityResultSchema =
   SchemaFactory.createForClass(ActivityResult);
+

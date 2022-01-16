@@ -3,9 +3,10 @@ import { Types } from 'mongoose';
 import { UsersService, UserResponsibleService, User } from 'src/api/users';
 import { isFromClass, isValidMongoId } from 'src/utils';
 import { ActivitiesService } from './activities.service';
-import { UpdateActivityResultDto } from '../dto';
+import { UpdateActivityResultDto, FinishActivityResultDto } from '../dto';
 import { ActivityResultRepository } from '../repositories';
 import { activityResultLogic, POPULATE_PATH_ACTIVITY_RESULT } from '../utils';
+import { PaginationParams } from 'src/database/pagination-params';
 
 @Injectable()
 export class ActivityResultService {
@@ -28,6 +29,28 @@ export class ActivityResultService {
     );
   }
 
+  async finishActivity(
+    userId: string,
+    finishActivityResultDto: FinishActivityResultDto,
+  ) {
+    this.userService.getById(userId);
+    const activity = await this.activitiesService.findOne(
+      finishActivityResultDto.activityId,
+    );
+    const result = activityResultLogic(
+      finishActivityResultDto.activityAnswers,
+      activity,
+    );
+
+    return await this.activityResultRepository.create({
+      user: userId,
+      finished: true,
+      activity: activity._id,
+      result,
+      activityAnswers: finishActivityResultDto.activityAnswers,
+    });
+  }
+
   async updateActivityResult(
     userId: string,
     activityResultDto: UpdateActivityResultDto,
@@ -46,12 +69,9 @@ export class ActivityResultService {
       activityResultDto.activityId,
     );
     let result: number = 0;
-    //logic to determine result
+    //logic to get activity result
     if (activityResultDto.finished)
-      result = activityResultLogic(
-        activityResultDto.activityAnswers,
-        activity.avaliationMethod,
-      );
+      result = activityResultLogic(activityResultDto.activityAnswers, activity);
     activityResult.result = result;
     activityResult.finished = activityResultDto.finished;
     activityResult.activityAnswers = activityResultDto.activityAnswers;
@@ -67,6 +87,7 @@ export class ActivityResultService {
 
   async getChildActivitiesResultsByResponsibleUserId(
     responsibleUserId: string,
+    pagination: PaginationParams,
   ) {
     const userResponsible = await this.usersResponsibleService
       .findOne(responsibleUserId)
@@ -76,17 +97,25 @@ export class ActivityResultService {
     if (!isFromClass<User>(userResponsible.child, 'name'))
       throw new Error('Failed to populate child object');
 
-    return this.findManyByUserId(userResponsible.child._id.toString());
+    return this.findManyByUserId(
+      userResponsible.child._id.toString(),
+      pagination,
+    );
   }
 
-  async findManyByUserId(userId: string) {
-    const activitiesResults = await this.activityResultRepository
-      .find({
+  async findManyByUserId(
+    userId: string,
+    { page, limit, sort }: PaginationParams,
+  ) {
+    const result = await this.activityResultRepository.paginate(
+      {
         user: userId,
-      })
-      .populate(POPULATE_PATH_ACTIVITY_RESULT);
+      },
+      { page, limit, sort },
+      POPULATE_PATH_ACTIVITY_RESULT,
+    );
 
-    return { activitiesResults };
+    return result;
   }
 
   async findManyById(arrayOfIds: Array<Types.ObjectId>) {

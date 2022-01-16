@@ -143,4 +143,28 @@ export abstract class EntityRepository<T extends Document> {
       { ...queryOptions, upsert: true, new: true },
     );
   }
+
+  async paginate(
+    entityFilterQuery: FilterQuery<T>,
+    { page, limit, sort }: { page: number; limit: number; sort: number },
+    population?: any,
+  ) {
+    const realPage = Number(page);
+    const realLimit = Number(limit);
+    const results = await this.entityModel
+      .find(entityFilterQuery)
+      .sort({ _id: sort })
+      .skip(realLimit * (realPage - 1))
+      .limit(realLimit)
+      .populate(population);
+    const total = await this.entityModel.find(entityFilterQuery).count().exec();
+    return {
+      results,
+      resultsSize: results.length,
+      total,
+      lastPage: Math.ceil(total / realLimit),
+      currentPage: realPage,
+      nextPage: realPage + 1,
+    };
+  }
 }
