@@ -138,15 +138,18 @@ function numberOperation(
 ) {
   let totalCorrectAnswers = 0;
   let totalQuestions = 0;
+  console.log(activityAnswers)
   loopActivityAnswers(activityAnswers, (answer, stageIndex, answerIndex) => {
     const currentStage = activity.stages[stageIndex];
-    console.log(answer);
     const operation = currentStage.operations.find(
       (x: any) => x._id.toString() === answer.operationId,
     );
     // operationId: string;
     // result?: number;
-    if (operation.result === answer.result) totalCorrectAnswers++;
+    console.log(answer);
+    
+    console.log(operation === undefined ? operation : '', 'OP');
+    if (operation?.result === answer.result) totalCorrectAnswers++;
   });
 
   activity.stages.forEach((stage) => {

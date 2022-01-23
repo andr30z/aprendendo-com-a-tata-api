@@ -48,7 +48,15 @@ export class NotificationsService {
     return `This action updates a #${id} notification`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} notification`;
+  async remove(id: string) {
+    const deleted = await this.notificationsRepository.deleteAndReturnDocument({
+      _id: id,
+    });
+
+    if (!deleted)
+      throw new NotFoundException(
+        'Não foi possivel encontrar uma notificação com o ID informado!',
+      );
+    return deleted.populate('user');
   }
 }
