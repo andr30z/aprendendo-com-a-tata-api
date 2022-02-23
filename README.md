@@ -4,7 +4,7 @@
 
 <h2>Tools</h2>
  <ul>
-   <li>NodeJS<li>
+   <li>NodeJS</li>
    <li>NestJS</li>
    <li>Typescript</li>
    <li>MongoDB</li>
