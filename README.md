@@ -1,4 +1,4 @@
-# Aprendendo com a Tatá
+# Aprendendo com a Tatá API
 
 <p>This REST API was made for my Final Paper during the period of 2021</p>
 
